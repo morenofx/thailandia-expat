@@ -77,24 +77,40 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* Blocca qualsiasi slittamento/rimbalzo involontario della barra superiore */
-    #mobile-fixed-header {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      width: 100% !important;
-      transform: translateZ(0); /* Forza accelerazione hardware GPU */
-      -webkit-transform: translateZ(0);
-      will-change: transform;
-      z-index: 9999 !important;
+    /* Guscio app: la pagina non scorre mai, scorre solo <main>.
+       Cosi' su iPhone la barra sopra e quella sotto non si muovono
+       (niente rimbalzo, niente salti quando compare/sparisce la barra di Safari). */
+    html, body {
+      height: 100%;
+      background-color: #0b1120;
+      overscroll-behavior: none;
+    }
+    body {
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #main-content-scroll {
+      overscroll-behavior-y: contain;
+      scroll-padding-top: 52px; /* i titoli di sezione non finiscono sotto la barra "Ordina" */
+    }
+    #mobile-fixed-header { position: relative; z-index: 45; }
+    button { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+    /* iPhone: sotto i 16px Safari zooma quando tocchi un campo e la pagina resta storta */
+    @media (max-width: 767px) {
+      input, select, textarea { font-size: 16px !important; }
+    }
+    @media (hover: none) {
+      #main-sidebar { padding-bottom: env(safe-area-inset-bottom, 0px); }
     }
 
-    /* Regola iOS Safari per sticky header stabile sia su mobile che desktop */
+    /* Barra "Ordina" che resta in cima mentre scorri la classifica */
     .sticky-ios-header {
       position: -webkit-sticky !important;
       position: sticky !important;
-      top: 56px !important; /* Subito sotto l'header mobile fisso */
+      top: -12px !important; /* compensa il padding di main */
       z-index: 40 !important;
       -webkit-transform: translateZ(0);
       transform: translateZ(0);
@@ -123,7 +139,7 @@
     }
   </style>
 </head>
-<body class="bg-darkbg text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white min-h-screen md:h-screen md:overflow-hidden flex flex-col md:flex-row pb-20 md:pb-0">
+<body class="bg-darkbg text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white flex flex-col md:flex-row">
 
   <!-- TOP BAR MOBILE (INCHIODATA FISSA AL 100% SU IPHONE CON ACCELERAZIONE GPU) -->
   <header id="mobile-fixed-header" class="md:hidden bg-slate-900/95 backdrop-blur-md border-b border-bordercol px-3.5 py-2.5 safe-top flex items-center justify-between shrink-0 shadow-xl">
@@ -294,7 +310,7 @@
 </aside>
 
   <!-- CONTENUTO PRINCIPALE A DESTRA A SCORRIMENTO INDIPENDENTE (CON PADDING-TOP SU MOBILE PER EVITARE LA BARRA FISSA) -->
-  <main id="main-content-scroll" class="flex-1 w-full md:h-screen md:overflow-y-auto smooth-scroll-touch pt-20 md:pt-6 p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-10 scroll-smooth">
+  <main id="main-content-scroll" class="flex-1 min-h-0 w-full overflow-y-auto smooth-scroll-touch p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-10 scroll-smooth">
 
     <!-- CLASSIFICA / LEADERBOARD SECTION -->
     <section id="leaderboard-section" class="space-y-3 sm:space-y-4">
@@ -342,7 +358,7 @@
             <col class="w-[210px]">              <!-- Città & Profilo -->
             <col class="w-[125px]">              <!-- Score Globale -->
             <col class="w-[105px]">              <!-- Movida -->
-            <col class="w-[115px]">              <!-- Relazioni / Moglie -->
+            <col class="w-[115px]">              <!-- Relazioni -->
             <col class="w-[105px]">              <!-- Risparmio / Costo -->
             <col class="w-[105px]">              <!-- Sanità -->
             <col class="w-[125px]">              <!-- Budget Stimato -->
@@ -480,7 +496,7 @@
   </main>
 
   <!-- BOTTOM BAR FISSA PER IPHONE / SMARTPHONE (Navigazione ad una mano) -->
-  <div class="md:hidden fixed bottom-0 inset-x-0 bg-slate-950/95 backdrop-blur-md border-t border-bordercol py-1.5 px-3 z-40 safe-bottom flex items-center justify-around text-[10px] font-semibold text-slate-400 shadow-2xl">
+  <nav id="mobile-bottom-bar" class="md:hidden shrink-0 bg-slate-950/95 backdrop-blur-md border-t border-bordercol py-1.5 px-3 z-40 safe-bottom flex items-center justify-around text-[10px] font-semibold text-slate-400 shadow-2xl">
     <button onclick="scrollToSection('leaderboard-section')" class="flex flex-col items-center py-1 px-2 text-cyan-400 hover:text-white transition active:scale-95">
       <span class="text-base leading-none">🏆</span>
       <span class="mt-0.5">Classifica</span>
@@ -501,7 +517,7 @@
       <span class="text-base leading-none">⚙️</span>
       <span class="mt-0.5">Pesi</span>
     </button>
-  </div>
+  </nav>
 
   <!-- MODALE AGGIUNGI NUOVA LOCALITÀ (VIA GEMINI API) -->
   <div id="add-city-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
@@ -719,7 +735,7 @@
         budgetThb: "28.000 - 45.000",
         budgetEurMin: 720,
         budgetEurMax: 1170,
-        badge: "Migliore per Moglie",
+        badge: "Ideale per la Coppia",
         badgeColor: "bg-pink-900/60 text-pink-300 border-pink-700",
         summary: "Il fulcro expat dell'Isan: vita serale piacevole, costo della vita stracciato e forte propensione familiare.",
         datingDynamic: "Riconosciuta come la migliore città per costruire una famiglia stabile. Le donne locali cercano compagni maturi e legami sinceri senza speculazioni turistiche.",
@@ -906,7 +922,7 @@
         badge: "Capitale Nomadi Digitali",
         badgeColor: "bg-orange-900/60 text-orange-300 border-orange-700",
         summary: "Fascino del nord tra templi, caffè gourmet, coworking moderni e clima montano più fresco.",
-        datingDynamic: "Donne del nord tradizionalmente gentili, universitarie e con mentalità aperta. Molti espatriati trovano moglie qui.",
+        datingDynamic: "Donne del nord tradizionalmente gentili, universitarie e con mentalità aperta. Molti espatriati qui trovano una compagna stabile.",
         nightlifeDetail: "Zoe in Yellow nel centro storico, bar con musica jazz (North Gate), pub lungo il fiume Ping e a Nimman.",
         healthcare: "Chiang Mai Ram Hospital e Bangkok Hospital Chiang Mai.",
         housing: "Affitti molto convenienti a Nimmanhaemin o vicino alla Città Vecchia (da 9.000 a 18.000 THB).",
@@ -924,6 +940,13 @@
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
+            // Vecchie etichette salvate sul telefono: aggiornate ai nomi nuovi
+            parsed.forEach(d => {
+              if (d && d.badge === "Migliore per Moglie") d.badge = "Ideale per la Coppia";
+              if (d && typeof d.datingDynamic === "string") {
+                d.datingDynamic = d.datingDynamic.replace("Molti espatriati trovano moglie qui", "Molti espatriati qui trovano una compagna stabile");
+              }
+            });
             return parsed;
           }
         }
@@ -1194,7 +1217,7 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
       updateCostBarChart();
 
       const toast = document.createElement('div');
-      toast.className = "fixed bottom-5 right-5 z-50 bg-cyan-950 border border-cyan-500 text-cyan-200 px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2 animate-bounce";
+      toast.className = "fixed bottom-24 md:bottom-5 right-5 z-[60] bg-cyan-950 border border-cyan-500 text-cyan-200 px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2 animate-bounce";
       toast.innerHTML = "<span>✅</span><span>Dati salvati e ricalcolati con successo!</span>";
       document.body.appendChild(toast);
 
@@ -1382,7 +1405,7 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
                   <span class="font-bold font-mono text-slate-200 text-xs">${item.nightlife.toFixed(1)}</span>
                 </div>
                 <div>
-                  <span class="text-pink-300 block text-[9px] font-medium">💍 Moglie</span>
+                  <span class="text-pink-300 block text-[9px] font-medium">💍 Relazioni</span>
                   <span class="font-bold font-mono text-slate-200 text-xs">${item.dating.toFixed(1)}</span>
                 </div>
                 <div>
