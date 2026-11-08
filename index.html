@@ -80,8 +80,8 @@
 </head>
 <body class="bg-darkbg text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white h-screen overflow-hidden flex flex-col md:flex-row pb-16 md:pb-0">
 
-  <!-- TOP BAR MOBILE (iPhone Friendly con Safe Area - FISSA IN CIMA DURANTE LO SCROLL) -->
-  <header class="md:hidden sticky top-0 bg-slate-900/98 backdrop-blur-md border-b border-bordercol px-3.5 py-2.5 safe-top flex items-center justify-between shrink-0 z-50 shadow-lg">
+  <!-- TOP BAR MOBILE (iPhone Friendly con Safe Area - BLOCCATA FISSA IN CIMA CON FIXED) -->
+  <header class="md:hidden fixed top-0 inset-x-0 bg-slate-900/98 backdrop-blur-md border-b border-bordercol px-3.5 py-2.5 safe-top flex items-center justify-between shrink-0 z-50 shadow-lg">
     <div class="flex items-center gap-2">
       <span class="text-2xl">🇹🇭</span>
       <div>
@@ -241,15 +241,15 @@
       </div>
 
       <!-- Pillola informativa pensionamento -->
-      <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-300 leading-relaxed">
-        <span class="text-amber-300 font-bold block mb-1">📌 Regola Visto 50+ / 60 Anni:</span>
-        Visto pensionistico (Non-O): deposito 800.000 THB (ca. 21.000€) in banca thai o pensione mensile di almeno 65.000 THB.
-      </div>
+    <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-300 leading-relaxed">
+      <span class="text-amber-300 font-bold block mb-1">📌 Regola Visto 50+ / 60 Anni:</span>
+      Visto pensionistico (Non-O): deposito 800.000 THB (ca. 21.000€) in banca thai o pensione mensile di almeno 65.000 THB.
     </div>
-  </aside>
+  </div>
+</aside>
 
-  <!-- CONTENUTO PRINCIPALE A DESTRA A SCORRIMENTO INDIPENDENTE -->
-  <main id="main-content-scroll" class="flex-1 h-screen overflow-y-auto smooth-scroll-touch p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-10 scroll-smooth">
+  <!-- CONTENUTO PRINCIPALE A DESTRA A SCORRIMENTO INDIPENDENTE (CON PADDING-TOP SU MOBILE PER EVITARE LA BARRA FISSA) -->
+  <main id="main-content-scroll" class="flex-1 h-screen overflow-y-auto smooth-scroll-touch pt-16 md:pt-6 p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-10 scroll-smooth">
 
     <!-- CLASSIFICA / LEADERBOARD SECTION -->
     <section id="leaderboard-section" class="space-y-3 sm:space-y-4">
