@@ -119,6 +119,14 @@
         </button>
       </div>
 
+      <!-- Backup / Esporta Dati per Cambio Telefono -->
+      <div class="mt-2.5 pt-2 border-t border-bordercol/60 flex items-center justify-between text-[11px]">
+        <span class="text-slate-400">Salvataggio Cloud/Dispositivi:</span>
+        <button onclick="openBackupModal()" class="text-cyan-300 hover:text-white bg-slate-800/80 px-2 py-1 rounded border border-slate-700 flex items-center gap-1 font-semibold transition">
+          <span>💾</span> Backup & Condividi
+        </button>
+      </div>
+
       <!-- Quick Search Bar -->
       <div class="relative mt-3">
         <input 
@@ -444,10 +452,56 @@
     </div>
   </div>
 
+  <!-- MODALE BACKUP / TRASFERISCI SU NUOVO TELEFONO -->
+  <div id="backup-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-cardbg border border-bordercol rounded-2xl max-w-md w-full p-5 sm:p-6 relative shadow-2xl space-y-4">
+      <button onclick="closeBackupModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full leading-none">
+        ✕
+      </button>
+
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">💾</span>
+        <div>
+          <h3 class="text-base font-black text-white">Salva & Trasferisci Città</h3>
+          <p class="text-[11px] text-slate-400">Mantieni i tuoi dati se cambi telefono o usi un altro browser</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 text-xs text-slate-300">
+        <!-- Opzione 1: Esporta file -->
+        <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl space-y-2">
+          <div class="font-bold text-cyan-300 flex items-center gap-1.5">
+            <span>📥</span> 1. Esporta le tue mete personali
+          </div>
+          <p class="text-[11px] text-slate-400">Scarica il file con tutte le mete salvate. Puoi inviarlo su WhatsApp o salvarlo in Google Drive.</p>
+          <button onclick="exportBackupFile()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold rounded-lg border border-slate-700 transition">
+            Scarica Backup (.json)
+          </button>
+        </div>
+
+        <!-- Opzione 2: Importa file -->
+        <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl space-y-2">
+          <div class="font-bold text-emerald-300 flex items-center gap-1.5">
+            <span>📤</span> 2. Ripristina sul nuovo telefono
+          </div>
+          <p class="text-[11px] text-slate-400">Seleziona il file scaricato in precedenza per caricare tutte le città sul nuovo dispositivo.</p>
+          <label class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold rounded-lg border border-slate-700 transition block text-center cursor-pointer">
+            Seleziona File di Backup
+            <input type="file" id="backup-file-input" accept=".json" class="hidden" onchange="importBackupFile(event)">
+          </label>
+        </div>
+      </div>
+
+      <div class="pt-2 text-right">
+        <button onclick="closeBackupModal()" class="px-4 py-1.5 text-xs rounded-lg bg-slate-800 text-slate-300">Chiudi</button>
+      </div>
+    </div>
+  </div>
+
   <!-- APPLICATION DATA & LOGIC -->
   <script>
     // City Database with detailed metrics and analytical qualitative text
-    const destinations = [
+    const defaultDestinations = [
       {
         id: "jomtien",
         name: "Jomtien & Pratumnak",
@@ -749,6 +803,35 @@
       }
     ];
 
+    // LocalStorage helper to persist added cities across page reloads
+    const STORAGE_KEY = "thailandia_expat_destinations_v1";
+
+    function loadSavedDestinations() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn("Errore lettura localStorage:", e);
+      }
+      return [...defaultDestinations];
+    }
+
+    function saveDestinations() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(destinations));
+      } catch (e) {
+        console.warn("Errore salvataggio localStorage:", e);
+      }
+    }
+
+    // Active destinations array populated from storage or defaults
+    const destinations = loadSavedDestinations();
+
     // Mobile Sidebar Drawer Helpers
     function toggleMobileSidebar() {
       const sidebar = document.getElementById('main-sidebar');
@@ -786,6 +869,62 @@
       document.getElementById('ai-error-message').classList.add('hidden');
       document.getElementById('btn-submit-city').disabled = false;
       document.getElementById('new-city-input').value = '';
+    }
+
+    // Modal Backup & Restore Helpers
+    function openBackupModal() {
+      closeMobileSidebarIfOpen();
+      document.getElementById('backup-modal').classList.remove('hidden');
+    }
+
+    function closeBackupModal() {
+      document.getElementById('backup-modal').classList.add('hidden');
+    }
+
+    function exportBackupFile() {
+      try {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(destinations, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `thailandia_expat_backup_${new Date().toISOString().slice(0, 10)}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+      } catch (err) {
+        console.error("Errore esportazione backup:", err);
+      }
+    }
+
+    function importBackupFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported) && imported.length > 0) {
+            destinations.length = 0;
+            imported.forEach(item => destinations.push(item));
+            saveDestinations();
+
+            document.getElementById('nav-count-badge').textContent = `${destinations.length} mete`;
+            renderLeaderboard();
+            renderCards();
+            renderRadarButtons();
+            updateRadarChart();
+            updateCostBarChart();
+
+            closeBackupModal();
+            alert("Backup ripristinato con successo! Tutte le tue mete sono state caricate.");
+          } else {
+            alert("Formato file non valido.");
+          }
+        } catch (err) {
+          alert("Errore durante la lettura del file di backup.");
+        }
+      };
+      reader.readAsText(file);
     }
 
     function fillExample(name) {
@@ -888,6 +1027,7 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
         if (!newCity.badgeColor) newCity.badgeColor = "bg-teal-900/60 text-teal-300 border-teal-700";
 
         destinations.unshift(newCity);
+        saveDestinations(); // Salva permanentemente la nuova città nel browser
 
         document.getElementById('nav-count-badge').textContent = `${destinations.length} mete`;
         renderLeaderboard();
@@ -932,6 +1072,9 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
         if (icon) icon.classList.add('animate-spin');
       });
 
+      // Salva lo stato e ricarica i dati
+      saveDestinations();
+
       renderLeaderboard();
       renderCards();
       renderRadarButtons();
@@ -940,7 +1083,7 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
 
       const toast = document.createElement('div');
       toast.className = "fixed bottom-5 right-5 z-50 bg-cyan-950 border border-cyan-500 text-cyan-200 px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2 animate-bounce";
-      toast.innerHTML = "<span>✅</span><span>Classifica e grafici aggiornati con successo!</span>";
+      toast.innerHTML = "<span>✅</span><span>Dati salvati e ricalcolati con successo!</span>";
       document.body.appendChild(toast);
 
       setTimeout(() => {
@@ -1325,11 +1468,36 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
               <span class="text-slate-400">Budget mensile consigliato:</span>
               <span class="font-mono font-bold text-cyan-300 text-sm">${item.budgetEurMin}€ - ${item.budgetEurMax}€ (${item.budgetThb} THB)</span>
             </div>
+
+            <!-- Pulsante Rimozione Città Personalizzata -->
+            ${!defaultDestinations.some(d => d.id === item.id) ? `
+              <div class="pt-2 text-right">
+                <button onclick="deleteCustomCity('${item.id}')" class="px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg text-xs font-semibold transition">
+                  🗑️ Rimuovi questa città salvata
+                </button>
+              </div>
+            ` : ''}
           </div>
         </div>
       `;
 
       modal.classList.remove('hidden');
+    }
+
+    // Function to delete a custom added city
+    function deleteCustomCity(id) {
+      const idx = destinations.findIndex(d => d.id === id);
+      if (idx !== -1) {
+        destinations.splice(idx, 1);
+        saveDestinations();
+        closeModal();
+        document.getElementById('nav-count-badge').textContent = `${destinations.length} mete`;
+        renderLeaderboard();
+        renderCards();
+        renderRadarButtons();
+        updateRadarChart();
+        updateCostBarChart();
+      }
     }
 
     function closeModal() {
