@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="it" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mete Ideali in Thailandia: Confronto & Classifica per Trasferimento</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#10b981',
+              600: '#059669',
+              primary: '#06b6d4',
+              accent: '#f59e0b',
+              night: '#8b5cf6',
+              love: '#ec4899',
+            },
+            darkbg: '#0b1120',
+            cardbg: '#151f32',
+            bordercol: '#24344d'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b1120;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #24344d;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #374151;
+    }
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.725rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="bg-darkbg text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white h-screen overflow-hidden flex flex-col md:flex-row">
+
+  <!-- TOP BAR MOBILE (visibile solo su schermi piccoli) -->
+  <header class="md:hidden bg-slate-900 border-b border-bordercol px-4 py-3 flex items-center justify-between shrink-0 z-50">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">🇹🇭</span>
+      <div>
+        <h1 class="text-sm font-black bg-gradient-to-r from-cyan-400 via-teal-300 to-amber-300 bg-clip-text text-transparent">Thailandia Expat</h1>
+        <p class="text-[9px] text-slate-400 leading-none">Guida 60enni & Mete</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="refreshData()" title="Aggiorna e ricalcola classifica" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition">
+        <span id="mobile-refresh-icon">🔄</span> <span class="hidden sm:inline">Aggiorna</span>
+      </button>
+      <button onclick="openNewCityModal()" class="px-2.5 py-1.5 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm">
+        <span>✨</span> <span>+ Aggiungi</span>
+      </button>
+      <button onclick="toggleMobileSidebar()" class="p-2 bg-slate-800 rounded-lg text-slate-300 border border-slate-700 focus:outline-none">
+        <span class="text-base">☰</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- OVERLAY OSCURANTE PER SIDEBAR MOBILE -->
+  <div id="mobile-sidebar-backdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/70 z-40 md:hidden hidden transition-opacity"></div>
+
+  <!-- SIDEBAR (DRAWER SU CELLULARE, FISSA SU DESKTOP) -->
+  <aside id="main-sidebar" class="fixed md:static inset-y-0 left-0 w-80 lg:w-96 bg-slate-900/98 md:bg-slate-900/95 border-r border-bordercol flex flex-col shrink-0 h-full z-50 shadow-2xl transition-transform transform -translate-x-full md:translate-x-0 overflow-y-auto">
+    <!-- Brand Header -->
+    <div class="p-4 sm:p-5 border-b border-bordercol/80 bg-slate-950/60 sticky top-0 z-10 backdrop-blur">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="text-3xl filter drop-shadow">🇹🇭</span>
+          <div>
+            <h1 class="text-base sm:text-lg font-black bg-gradient-to-r from-cyan-400 via-teal-300 to-amber-300 bg-clip-text text-transparent leading-tight">
+              Thailandia Expat
+            </h1>
+            <p class="text-[10px] text-slate-400">Guida 60enni & Trasferimento</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="badge-pill bg-cyan-950 text-cyan-300 border border-cyan-700/60 text-[10px] font-mono">1€≈38.5฿</span>
+          <button onclick="toggleMobileSidebar()" class="md:hidden text-slate-400 p-1 hover:text-white">✕</button>
+        </div>
+      </div>
+
+      <!-- Pulsanti Azione Principali (Aggiungi con AI & Aggiorna) -->
+      <div class="grid grid-cols-5 gap-2 mt-3">
+        <button onclick="openNewCityModal()" class="col-span-3 py-2 px-3 bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-950/50 border border-cyan-400/40">
+          <span class="text-sm">✨</span>
+          <span class="truncate">+ Nuova Città (AI)</span>
+        </button>
+        <button onclick="refreshData()" id="sidebar-refresh-btn" title="Aggiorna e ricalcola tutti i punteggi e grafici" class="col-span-2 py-2 px-2.5 bg-slate-800 hover:bg-slate-700 active:bg-cyan-950 text-cyan-300 hover:text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border border-slate-700 shadow-sm active:scale-95">
+          <span id="sidebar-refresh-icon">🔄</span>
+          <span>Aggiorna</span>
+        </button>
+      </div>
+
+      <!-- Quick Search Bar -->
+      <div class="relative mt-3">
+        <input 
+          type="text" 
+          id="city-search" 
+          placeholder="Filtra città (Jomtien, Isan...)" 
+          oninput="handleSearch(this.value)"
+          class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition"
+        >
+        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">🔍</span>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs / Sections -->
+    <div class="p-3 border-b border-bordercol/80 bg-slate-900/80">
+      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 block mb-1.5">Navigazione Rapida</span>
+      <nav class="grid grid-cols-2 md:grid-cols-1 gap-1.5 text-xs font-semibold">
+        <button onclick="scrollToSection('leaderboard-section'); closeMobileSidebarIfOpen();" class="w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-900/40 text-slate-200 hover:text-cyan-300 border border-slate-700/60 transition flex items-center justify-between">
+          <span class="flex items-center gap-2"><span>🏆</span> Classifica</span>
+          <span class="text-[10px] text-slate-500">Allineata</span>
+        </button>
+        <button onclick="scrollToSection('cards-section'); closeMobileSidebarIfOpen();" class="w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-900/40 text-slate-200 hover:text-cyan-300 border border-slate-700/60 transition flex items-center justify-between">
+          <span class="flex items-center gap-2"><span>🏙️</span> Schede Mete</span>
+          <span id="nav-count-badge" class="text-[10px] text-cyan-400">13 mete</span>
+        </button>
+        <button onclick="scrollToSection('radar-section'); closeMobileSidebarIfOpen();" class="w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-900/40 text-slate-200 hover:text-cyan-300 border border-slate-700/60 transition flex items-center justify-between">
+          <span class="flex items-center gap-2"><span>📊</span> Grafici</span>
+          <span class="text-[10px] text-slate-500">Radar & Costi</span>
+        </button>
+        <button onclick="scrollToSection('guide-section'); closeMobileSidebarIfOpen();" class="w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-900/40 text-slate-200 hover:text-cyan-300 border border-slate-700/60 transition flex items-center justify-between">
+          <span class="flex items-center gap-2"><span>💍</span> Guida Over 60</span>
+          <span class="text-[10px] text-pink-400">Consigli</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- PONDERATORE PESI INTERATTIVO NELLA BARRA A SINISTRA -->
+    <div class="p-4 sm:p-5 space-y-4 flex-1">
+      <div class="flex items-center justify-between border-b border-bordercol/60 pb-2">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Pesi Decisionali</span>
+          <h2 class="text-xs sm:text-sm font-bold text-white">Priorità Personali</h2>
+        </div>
+        <button onclick="resetWeights()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded border border-slate-700 transition">
+          🔄 Reset
+        </button>
+      </div>
+
+      <!-- Sliders List -->
+      <div class="space-y-3.5 text-xs">
+        <!-- Nightlife Slider -->
+        <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-semibold text-purple-300 flex items-center gap-1 text-[11px]">
+              <span>🍸</span> Movida & Locali
+            </span>
+            <span id="val-nightlife" class="font-mono font-bold text-purple-300 bg-purple-950/80 px-1.5 py-0.5 rounded text-[10px] border border-purple-800">25%</span>
+          </div>
+          <input type="range" id="w-nightlife" min="0" max="50" value="25" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer accent-purple-500" oninput="updateWeights()">
+        </div>
+
+        <!-- Dating Slider -->
+        <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-semibold text-pink-300 flex items-center gap-1 text-[11px]">
+              <span>💍</span> Relazioni / Compagna
+            </span>
+            <span id="val-dating" class="font-mono font-bold text-pink-300 bg-pink-950/80 px-1.5 py-0.5 rounded text-[10px] border border-pink-800">25%</span>
+          </div>
+          <input type="range" id="w-dating" min="0" max="50" value="25" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer accent-pink-500" oninput="updateWeights()">
+        </div>
+
+        <!-- Cost Slider -->
+        <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-semibold text-emerald-300 flex items-center gap-1 text-[11px]">
+              <span>💰</span> Basso Costo Vita
+            </span>
+            <span id="val-cost" class="font-mono font-bold text-emerald-300 bg-emerald-950/80 px-1.5 py-0.5 rounded text-[10px] border border-emerald-800">25%</span>
+          </div>
+          <input type="range" id="w-cost" min="0" max="50" value="25" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer accent-emerald-500" oninput="updateWeights()">
+        </div>
+
+        <!-- Healthcare Slider -->
+        <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-semibold text-cyan-300 flex items-center gap-1 text-[11px]">
+              <span>🏥</span> Ospedali & Servizi
+            </span>
+            <span id="val-services" class="font-mono font-bold text-cyan-300 bg-cyan-950/80 px-1.5 py-0.5 rounded text-[10px] border border-cyan-800">25%</span>
+          </div>
+          <input type="range" id="w-services" min="0" max="50" value="25" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer accent-cyan-500" oninput="updateWeights()">
+        </div>
+      </div>
+
+      <!-- Pillola informativa pensionamento -->
+      <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-300 leading-relaxed">
+        <span class="text-amber-300 font-bold block mb-1">📌 Regola Visto 50+ / 60 Anni:</span>
+        Visto pensionistico (Non-O): deposito 800.000 THB (ca. 21.000€) in banca thai o pensione mensile di almeno 65.000 THB.
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENUTO PRINCIPALE A DESTRA A SCORRIMENTO INDIPENDENTE -->
+  <main id="main-content-scroll" class="flex-1 h-screen overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-10 scroll-smooth">
+
+    <!-- CLASSIFICA / LEADERBOARD SECTION -->
+    <section id="leaderboard-section" class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Classifica Dinamica Allineata</span>
+          <h2 class="text-xl sm:text-2xl font-black text-white">Graduatoria Mete in Ordine di Idoneità</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Clicca su ciascun bottone della colonna per ordinarla al momento</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="badge-pill bg-cyan-950 text-cyan-300 border border-cyan-700 text-xs">Tabella Rigida a Colonne Fisse</span>
+        </div>
+      </div>
+
+      <!-- Table Container with strict table-fixed layout and sticky styled header cells -->
+      <div class="overflow-x-auto rounded-xl border border-bordercol bg-cardbg shadow-xl block">
+        <table class="w-full table-fixed text-left text-xs sm:text-sm border-collapse min-w-[920px]">
+          <colgroup>
+            <col class="w-[50px]">               <!-- Posizione -->
+            <col class="w-[210px]">              <!-- Città & Profilo -->
+            <col class="w-[125px]">              <!-- Score Globale -->
+            <col class="w-[105px]">              <!-- Movida -->
+            <col class="w-[115px]">              <!-- Relazioni / Moglie -->
+            <col class="w-[105px]">              <!-- Risparmio / Costo -->
+            <col class="w-[105px]">              <!-- Sanità -->
+            <col class="w-[125px]">              <!-- Budget Stimato -->
+            <col class="w-[85px]">               <!-- Scheda -->
+          </colgroup>
+          <thead class="sticky top-0 z-30 bg-slate-900 shadow-md text-slate-200 text-xs font-semibold select-none border-b-2 border-bordercol">
+            <tr>
+              <th scope="col" class="py-3 px-2 text-center text-slate-400 font-bold">
+                #
+              </th>
+              <th scope="col" class="py-3 px-4 text-left">
+                <span class="text-slate-300 font-bold uppercase tracking-wider text-[11px]">Città & Contesto</span>
+              </th>
+              <th scope="col" class="py-2.5 px-2 text-center">
+                <button type="button" onclick="changeSort('score')" id="th-btn-score" class="w-full py-1.5 px-2 rounded-lg font-bold bg-cyan-600 text-white flex items-center justify-center gap-1 transition shadow-sm border border-cyan-400/40">
+                  <span>Score Totale</span>
+                  <span id="th-sort-score" class="text-xs">▼</span>
+                </button>
+              </th>
+              <th scope="col" class="py-2.5 px-1.5 text-center">
+                <button type="button" onclick="changeSort('nightlife')" id="th-btn-nightlife" class="w-full py-1.5 px-1.5 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 text-purple-300 flex items-center justify-center gap-1 transition border border-slate-700">
+                  <span>🍸 Notturna</span>
+                  <span id="th-sort-nightlife" class="text-[10px] text-slate-500">↕</span>
+                </button>
+              </th>
+              <th scope="col" class="py-2.5 px-1.5 text-center">
+                <button type="button" onclick="changeSort('dating')" id="th-btn-dating" class="w-full py-1.5 px-1.5 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 text-pink-300 flex items-center justify-center gap-1 transition border border-slate-700">
+                  <span>💍 Relazioni</span>
+                  <span id="th-sort-dating" class="text-[10px] text-slate-500">↕</span>
+                </button>
+              </th>
+              <th scope="col" class="py-2.5 px-1.5 text-center">
+                <button type="button" onclick="changeSort('cost')" id="th-btn-cost" class="w-full py-1.5 px-1.5 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 text-emerald-300 flex items-center justify-center gap-1 transition border border-slate-700">
+                  <span>💰 Costo</span>
+                  <span id="th-sort-cost" class="text-[10px] text-slate-500">↕</span>
+                </button>
+              </th>
+              <th scope="col" class="py-2.5 px-1.5 text-center">
+                <button type="button" onclick="changeSort('services')" id="th-btn-services" class="w-full py-1.5 px-1.5 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 text-cyan-300 flex items-center justify-center gap-1 transition border border-slate-700">
+                  <span>🏥 Sanità</span>
+                  <span id="th-sort-services" class="text-[10px] text-slate-500">↕</span>
+                </button>
+              </th>
+              <th scope="col" class="py-3 px-3 text-right text-slate-300 uppercase tracking-wider text-[11px] font-bold">
+                Budget (€/m)
+              </th>
+              <th scope="col" class="py-3 px-2 text-center text-slate-400 uppercase tracking-wider text-[11px] font-bold">
+                Dettagli
+              </th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body" class="divide-y divide-bordercol/60 text-slate-200">
+            <!-- Dynamically populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- DETAILED CITY CARDS SECTION -->
+    <section id="cards-section" class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Approfondimento Completo</span>
+          <h2 class="text-xl sm:text-2xl font-black text-white">Schede Dettagliate per Ogni Destinazione</h2>
+        </div>
+        <p class="text-xs text-slate-400">Include Jomtien, Sattahip, Isan, Bangkok e le isole</p>
+      </div>
+
+      <!-- City Cards Grid -->
+      <div id="city-cards-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <!-- Dynamically populated via JS -->
+      </div>
+    </section>
+
+    <!-- RADAR & BAR CHARTS SECTION -->
+    <section id="radar-section" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <!-- Radar Chart Card -->
+      <div class="lg:col-span-7 bg-cardbg border border-bordercol rounded-2xl p-5 shadow-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-bordercol pb-3">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-purple-400">Analisi Multidimensionale</span>
+            <h3 class="text-lg font-bold text-white">Grafico Radar Comparativo</h3>
+            <p class="text-xs text-slate-400">Seleziona le città da confrontare sovrapposte a 5 parametri</p>
+          </div>
+          <!-- City toggles for radar -->
+          <div class="flex items-center gap-1.5 flex-wrap" id="radar-toggles">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+        <div class="relative w-full h-[320px] sm:h-[360px]">
+          <canvas id="comparisonRadarChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Cost & Overall Bar Chart Card -->
+      <div class="lg:col-span-5 bg-cardbg border border-bordercol rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+        <div class="mb-4 border-b border-bordercol pb-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Budget & Convenienza</span>
+          <h3 class="text-lg font-bold text-white">Costo Mensile Medio Stimato (€)</h3>
+          <p class="text-xs text-slate-400">Spesa minima e confortevole con alloggio e vita regolare</p>
+        </div>
+        <div class="relative w-full h-[320px] sm:h-[360px]">
+          <canvas id="costBarChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- STRATEGIC SUMMARY & DATING GUIDE BOX -->
+    <section id="guide-section" class="bg-gradient-to-br from-slate-900 to-cardbg border border-bordercol rounded-2xl p-6 shadow-xl mb-12">
+      <h3 class="text-lg font-bold text-amber-300 flex items-center gap-2 mb-3">
+        <span>💡</span> Vademecum per Trasferirsi a 60 Anni: Compagna, Movida e Serenità
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs text-slate-300 leading-relaxed">
+        <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-purple-300 text-sm mb-1.5">1. Movida Turistica vs. Relazione Seria</h4>
+          <p>
+            Locali notturni di Pattaya centro o Bangla Road offrono socializzazione istantanea. Tuttavia, per una compagna duratura a 60 anni, il circuito dei bar comporta richieste economiche costanti. Meglio vivere a Jomtien, Bang Saray o Hua Hin e frequentare mercati diurni, caffè o app serie.
+          </p>
+        </div>
+        <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-pink-300 text-sm mb-1.5">2. Isan (Udon Thani, Khon Kaen)</h4>
+          <p>
+            Il posto dove la differenza di età non è affatto un ostacolo: donne di 35–48 anni cercano protezione, affetto sincero e rispetto per la famiglia. I legami sono profondi, i costi mensili scendono sotto i 1000€ e la vita è genuina.
+          </p>
+        </div>
+        <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-cyan-300 text-sm mb-1.5">3. Sanità e Alloggi Strategici</h4>
+          <p>
+            A 60 anni la vicinanza a strutture di livello (Bangkok Hospital a Pattaya, Udon o Bangkok) è essenziale. Consigliabile affittare un condominio per il primo anno senza acquistare terreni, per integrarsi prima gradualmente con serenità.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODALE AGGIUNGI NUOVA LOCALITÀ (VIA GEMINI API) -->
+  <div id="add-city-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-cardbg border border-bordercol rounded-2xl max-w-lg w-full p-5 sm:p-6 relative shadow-2xl">
+      <button onclick="closeNewCityModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full leading-none">
+        ✕
+      </button>
+
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-2xl">✨</span>
+        <h3 class="text-lg font-black text-white">Aggiungi Località con Autocompilazione AI</h3>
+      </div>
+      <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+        Inserisci il nome di qualsiasi città o isola della Thailandia (es. <span class="text-cyan-300 font-semibold cursor-pointer underline" onclick="fillExample('Nakhon Ratchasima (Korat)')">Korat</span>, <span class="text-cyan-300 font-semibold cursor-pointer underline" onclick="fillExample('Koh Chang')">Koh Chang</span>, <span class="text-cyan-300 font-semibold cursor-pointer underline" onclick="fillExample('Pai')">Pai</span>, <span class="text-cyan-300 font-semibold cursor-pointer underline" onclick="fillExample('Trang')">Trang</span>). L'AI analizzerà la destinazione per un trasferimento over 50/60 e compilerà automaticamente tutti i parametri.
+      </p>
+
+      <form id="add-city-form" onsubmit="handleGenerateCity(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Nome Località / Isola Thailandese</label>
+          <input 
+            type="text" 
+            id="new-city-input" 
+            required 
+            placeholder="Es. Nakhon Ratchasima, Koh Chang, Pai..." 
+            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition"
+          >
+        </div>
+
+        <div id="ai-loading-indicator" class="hidden bg-slate-900/90 border border-cyan-500/40 p-4 rounded-xl text-center space-y-2">
+          <div class="inline-block animate-spin text-2xl">🌀</div>
+          <p class="text-xs text-cyan-300 font-semibold">Gemini AI sta analizzando la città...</p>
+          <p class="text-[11px] text-slate-400">Valutazione movida, donne per matrimonio, costi in THB e ospedali.</p>
+        </div>
+
+        <div id="ai-error-message" class="hidden bg-rose-950/50 border border-rose-800 text-rose-300 text-xs p-3 rounded-xl">
+          <!-- Messaggio di errore -->
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" onclick="closeNewCityModal()" class="px-4 py-2 text-xs rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+            Annulla
+          </button>
+          <button type="submit" id="btn-submit-city" class="px-5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white shadow-lg shadow-cyan-950/50 transition flex items-center gap-1.5">
+            <span>🚀 Analizza & Aggiungi</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Interactive Modal for Detailed View -->
+  <div id="city-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-cardbg border border-bordercol rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full leading-none">
+        ✕
+      </button>
+      <div id="modal-content">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION DATA & LOGIC -->
+  <script>
+    // City Database with detailed metrics and analytical qualitative text
+    const destinations = [
+      {
+        id: "jomtien",
+        name: "Jomtien & Pratumnak",
+        zone: "Chonburi (Sud Pattaya)",
+        type: "Costa Residenziale & Mare",
+        nightlife: 8.0,
+        dating: 8.2,
+        cost: 8.8,
+        services: 9.0,
+        beachQuality: 7.2,
+        budgetThb: "32.000 - 55.000",
+        budgetEurMin: 830,
+        budgetEurMax: 1430,
+        badge: "Top Scelta 50-60enni",
+        badgeColor: "bg-teal-900/60 text-teal-300 border-teal-700",
+        summary: "Il compromesso perfetto: lungomare alberato, condomini fronte spiaggia, vita tranquilla ma a 10 min dai locali e dagli ospedali di Pattaya.",
+        datingDynamic: "Ideale per over 50/60: atmosfera rilassata, mercati notturni tranquilli (Rompho, Jomtien Night Market). Donne mature (35-50 anni), lavoratrici stabili del commercio e della ristorazione, meno esasperazione da bar.",
+        nightlifeDetail: "Soi White Sand, Soi Welcome, bar sportivi informali e ristoranti sul mare. Se cerchi musica fino all'alba la movida di Pattaya è a 10 minuti di Songthaew (10 THB).",
+        healthcare: "Accesso rapido a Bangkok Hospital Pattaya, Jomtien Hospital e cliniche internazionali sul Thappraya Road.",
+        housing: "Migliaia di condomini fronte mare con piscina, sicurezza 24h e palestre a partire da 10.000 - 16.000 THB/mese.",
+        pros: ["Spiaggia riqualificata con passeggiata pedonale", "Songthaew a 10 Baht h24 per Pattaya", "Sanità eccellente a portata di mano"],
+        cons: ["Traffico nei weekend dai visitatori di Bangkok", "Mare discreto ma non tropicale cristallino"]
+      },
+      {
+        id: "sattahip",
+        name: "Sattahip & Bang Saray",
+        zone: "Chonburi Sud (Costa)",
+        type: "Borgo Marino Autentico",
+        nightlife: 4.5,
+        dating: 8.8,
+        cost: 9.2,
+        services: 8.2,
+        beachQuality: 8.5,
+        budgetThb: "26.000 - 45.000",
+        budgetEurMin: 680,
+        budgetEurMax: 1170,
+        badge: "Mare Pulito & Tradizione",
+        badgeColor: "bg-cyan-900/60 text-cyan-300 border-cyan-700",
+        summary: "Acque tra le più pulite del golfo, villaggi di pescatori (Bang Saray) e base navale militare. Serenità totale a 30 minuti da Pattaya.",
+        datingDynamic: "Ambiente tradizionale e familiare thai. Pochissimo turismo di massa: le conoscenze avvengono nei mercati, caffè locali e app. Donne genuine e orientate alla casa e alla famiglia.",
+        nightlifeDetail: "Ristoranti tipici di pesce sul molo, piccoli pub sul lungomare e mercati serali tradizionali. Zero discoteche caotiche.",
+        healthcare: "Queen Sirikit Naval Hospital (grande ospedale ben attrezzato) e Bangkok Hospital Pattaya a 35 minuti.",
+        housing: "Case indipendenti con giardino o nuovi condomini vista mare a Bang Saray a prezzi stracciati (8.000 - 15.000 THB).",
+        pros: ["Spiagge molto pulite (Sai Kaew, Nang Ram)", "Costo della vita bassissimo", "Zero caos dei bar rumorosi"],
+        cons: ["Vita notturna quasi assente", "Necessario avere scooter o auto propria", "Meno residenti che parlano inglese"]
+      },
+      {
+        id: "pattaya",
+        name: "Pattaya Centro",
+        zone: "Costa Orientale / Golfo",
+        type: "Mare & Città",
+        nightlife: 10,
+        dating: 6.5,
+        cost: 8.5,
+        services: 9.0,
+        beachQuality: 6.5,
+        budgetThb: "38.000 - 62.000",
+        budgetEurMin: 980,
+        budgetEurMax: 1600,
+        badge: "Capitale Movida",
+        badgeColor: "bg-purple-900/60 text-purple-300 border-purple-700",
+        summary: "Massima densità di locali e bar del pianeta, vita di mare comoda a 90 minuti da Bangkok.",
+        datingDynamic: "Facilissimo fare incontri occasionali. Per relazioni serie è fondamentale evitare i bar a luci rosse e orientarsi su app convenzionali, palestre, mercati e vita diurna.",
+        nightlifeDetail: "Walking Street, Soi LK Metro, Soi Buakhao, Soi 6. Musica live, discoteche sul mare e club aperti 24/7.",
+        healthcare: "Bangkok Hospital Pattaya e Pattaya Memorial (eccellenze di livello internazionale).",
+        housing: "Migliaia di moderni condo con piscina a sfioro e palestra a partire da soli 12.000-18.000 THB/mese.",
+        pros: ["Economica per svago e cibo", "Vicina all'aeroporto BKK", "Grandi ospedali e centri commerciali"],
+        cons: ["Turismo di massa caotico nel centro", "Mare cittadino non paragonabile alle isole"]
+      },
+      {
+        id: "bangkok",
+        name: "Bangkok",
+        zone: "Thailandia Centrale",
+        type: "Metropoli Globale",
+        nightlife: 9.5,
+        dating: 8.5,
+        cost: 6.5,
+        services: 10.0,
+        beachQuality: 2.0,
+        budgetThb: "48.000 - 85.000",
+        budgetEurMin: 1250,
+        budgetEurMax: 2200,
+        badge: "Hub Cosmopolita",
+        badgeColor: "bg-blue-900/60 text-blue-300 border-blue-700",
+        summary: "La capitale con le migliori infrastrutture d'Asia, trasporti Skytrain (BTS) e sanità al vertice.",
+        datingDynamic: "Il posto ideale per donne istruite, bilingui, professioniste in carriera e studentesse universitarie tramite Bumble, eventi o hobby.",
+        nightlifeDetail: "Cocktail bar di lusso a Thonglor, club trendy a Ekkamai, rooftop spettacolari lungo il fiume e aree celebri come Nana e Sukhumvit 11.",
+        healthcare: "Bumrungrad International Hospital, Samitivej, Bangkok Hospital (tra i migliori al mondo).",
+        housing: "Appartamenti futuristici con vista skyline lungo la metro/BTS (da 16.000 THB a salire per moderni monolocali).",
+        pros: ["Sanità e servizi impareggiabili", "Incontri di alto profilo", "Connessa a tutto il mondo"],
+        cons: ["Traffico intenso e caldo", "Nessuna spiaggia", "Costo affitti più alto"]
+      },
+      {
+        id: "udonthani",
+        name: "Udon Thani",
+        zone: "Isan (Nord-Est)",
+        type: "Città Tradizionale",
+        nightlife: 7.0,
+        dating: 9.5,
+        cost: 9.5,
+        services: 8.0,
+        beachQuality: 2.0,
+        budgetThb: "28.000 - 45.000",
+        budgetEurMin: 720,
+        budgetEurMax: 1170,
+        badge: "Migliore per Moglie",
+        badgeColor: "bg-pink-900/60 text-pink-300 border-pink-700",
+        summary: "Il fulcro expat dell'Isan: vita serale piacevole, costo della vita stracciato e forte propensione familiare.",
+        datingDynamic: "Riconosciuta come la migliore città per costruire una famiglia stabile. Le donne locali cercano compagni maturi e legami sinceri senza speculazioni turistiche.",
+        nightlifeDetail: "Sampanthamit Road, pub western, locali con musica Isan e birrerie tradizionali vivaci.",
+        healthcare: "Bangkok Hospital Udon Thani e Wattana Hospital (ottimi reparti privati).",
+        housing: "Case indipendenti con giardino o condomini a partire da 6.000 - 12.000 THB/mese.",
+        pros: ["Costo della vita bassissimo", "Valori familiari sani e sinceri", "Comunità expat accogliente"],
+        cons: ["Lontana dal mare", "Inglese meno diffuso nei negozietti", "Clima molto caldo d'estate"]
+      },
+      {
+        id: "khonkaen",
+        name: "Khon Kaen",
+        zone: "Isan (Nord-Est)",
+        type: "Città Universitaria",
+        nightlife: 7.2,
+        dating: 9.0,
+        cost: 9.5,
+        services: 8.5,
+        beachQuality: 2.0,
+        budgetThb: "28.000 - 42.000",
+        budgetEurMin: 720,
+        budgetEurMax: 1090,
+        badge: "Universitaria & Autentica",
+        badgeColor: "bg-emerald-900/60 text-emerald-300 border-emerald-700",
+        summary: "Città moderna, giovanile e pulita con laghi suggestivi e una dinamica relazionale autentica.",
+        datingDynamic: "Popolazione giovane ed educata grazie al polo universitario. Facilità di incontri con laureate, insegnanti e dipendenti statali.",
+        nightlifeDetail: "Locali eleganti attorno al lago Kaen Nakhon, club con musica thai contemporanea e mercati serali come Ton Tann.",
+        healthcare: "Srinagarind Hospital e Bangkok Hospital Khon Kaen.",
+        housing: "Condomini di recente costruzione a 7.000 - 12.000 THB/mese.",
+        pros: ["Ambiente colto ed educato", "Economica", "Mercati gastronomici tra i migliori"],
+        cons: ["Pochissimo turismo (serve imparare il thai)", "Zero mare"]
+      },
+      {
+        id: "rayong",
+        name: "Rayong & Mae Phim",
+        zone: "Costa Orientale",
+        type: "Costa Balneare Quieta",
+        nightlife: 5.0,
+        dating: 8.5,
+        cost: 9.2,
+        services: 8.0,
+        beachQuality: 8.0,
+        budgetThb: "27.000 - 44.000",
+        budgetEurMin: 700,
+        budgetEurMax: 1150,
+        badge: "Pensione al Mare Low-Cost",
+        badgeColor: "bg-lime-900/60 text-lime-300 border-lime-700",
+        summary: "Chilometri di spiagge sabbiose senza ressa, cucina di pesce a buon mercato e comunità nord-europea serena.",
+        datingDynamic: "Contesto genuino di provincia costiera. Donne locali serie, ristoratrici o impiegate nei servizi. Rapporti diretti e senza pressioni commerciali.",
+        nightlifeDetail: "Bistrot e pub rilassati lungo la spiaggia di Laem Mae Phim, birrerie locali a Rayong città.",
+        healthcare: "Bangkok Hospital Rayong (struttura eccellente a 30 minuti).",
+        housing: "Condomini vista mare a Laem Mae Phim a partire da 9.000 - 15.000 THB/mese.",
+        pros: ["Affitti e pesce freschissimo a prezzi minimi", "Spiagge ampie e silenziose", "Vicina a Koh Samet"],
+        cons: ["Poca vita serale giovanile", "Auto o scooter indispensabili"]
+      },
+      {
+        id: "huahin",
+        name: "Hua Hin & Cha-Am",
+        zone: "Golfo di Thailandia (Ovest)",
+        type: "Costa Reale Rilassata",
+        nightlife: 6.0,
+        dating: 7.8,
+        cost: 8.0,
+        services: 8.5,
+        beachQuality: 7.5,
+        budgetThb: "35.000 - 55.000",
+        budgetEurMin: 910,
+        budgetEurMax: 1430,
+        badge: "Serenità & Pensionati",
+        badgeColor: "bg-amber-900/60 text-amber-300 border-amber-700",
+        summary: "Meta regale tranquilla, campi da golf, passeggiate sul mare e ritmi di vita protetti e sicuri.",
+        datingDynamic: "Ritmi rilassati. Ottima per chi cerca donne mature (35-50) per una convivenza pacifica, lontana da ambienti caotici.",
+        nightlifeDetail: "Soi Bintabaht per pub e birrerie tranquille, mercati serali eleganti come Cicada e Tamarind.",
+        healthcare: "Bangkok Hospital Hua Hin e San Paolo Hospital.",
+        housing: "Condomini ben tenuti e villette all'interno di residence chiusi con piscina da 14.000-24.000 THB.",
+        pros: ["Città molto pulita e sicura", "Facile da raggiungere da Bangkok", "Ottimi campi da golf"],
+        cons: ["Vita notturna limitata", "Mare poco profondo con venti costanti"]
+      },
+      {
+        id: "krabi",
+        name: "Krabi (Ao Nang)",
+        zone: "Sud (Andamane)",
+        type: "Natura & Mare Spettacolare",
+        nightlife: 6.5,
+        dating: 7.2,
+        cost: 7.5,
+        services: 7.5,
+        beachQuality: 9.2,
+        budgetThb: "34.000 - 56.000",
+        budgetEurMin: 880,
+        budgetEurMax: 1450,
+        badge: "Natura & Scogliere",
+        badgeColor: "bg-emerald-950 text-emerald-300 border-emerald-800",
+        summary: "Paesaggi mozzafiato con faraglioni calcarei, mare smeraldo e ritmi molto più distesi rispetto a Phuket.",
+        datingDynamic: "Ambiente naturale e informale. Molte ragazze impiegate nel turismo eco-friendly, immersioni o commercio. Popolazione mista buddista e musulmana accogliente.",
+        nightlifeDetail: "Ao Nang Center Point, bar con musica acustica e reggaeton sul lungomare, pub rilassati a Klong Muang.",
+        healthcare: "Krabi Nakharin International Hospital e Bangkok Hospital a Phuket (a 2 ore).",
+        housing: "Bungalow o villette immerse nel verde tra 12.000 e 22.000 THB/mese.",
+        pros: ["Panorami marini unici al mondo", "Aeroporto comodo", "Molto meno caotica di Phuket"],
+        cons: ["Meno condomini moderni disponibili", "Stagione dei monsoni piovosa"]
+      },
+      {
+        id: "rawai",
+        name: "Phuket - Rawai & Chalong",
+        zone: "Phuket Sud",
+        type: "Comunità Expat Stanziale",
+        nightlife: 7.5,
+        dating: 7.5,
+        cost: 6.5,
+        services: 8.8,
+        beachQuality: 9.0,
+        budgetThb: "42.000 - 75.000",
+        budgetEurMin: 1090,
+        budgetEurMax: 1950,
+        badge: "Expat Sud Phuket",
+        badgeColor: "bg-indigo-900/60 text-indigo-300 border-indigo-700",
+        summary: "L'angolo preferito dagli expat residenti a Phuket: vicino a spiagge bellissime (Nai Harn, Yanui), palestre di Muay Thai e ristoranti tipici.",
+        datingDynamic: "Molto diversa dal caos di Patong: qui vivono e lavorano donne residenti stabilmente, sia nel settore turistico che commerciale. Relazioni più concrete e durature.",
+        nightlifeDetail: "Laguna bar a Nai Harn, pub con musica dal vivo sul molo di Rawai, beach club rilassati.",
+        healthcare: "Bangkok Hospital Siriroj e Dibuk Hospital a 25 minuti.",
+        housing: "Ville con piscina e condo moderni tra 16.000 e 35.000 THB.",
+        pros: ["Spiaggia di Nai Harn favolosa", "Vero spirito di comunità residente", "Ottimi ristoranti"],
+        cons: ["Prezzi taxi elevati", "Traffico sulla rotatoria di Chalong"]
+      },
+      {
+        id: "phuket",
+        name: "Phuket (Patong Centro)",
+        zone: "Sud (Andamane)",
+        type: "Grande Isola & Turismo",
+        nightlife: 9.5,
+        dating: 6.0,
+        cost: 5.5,
+        services: 8.8,
+        beachQuality: 8.8,
+        budgetThb: "50.000 - 95.000",
+        budgetEurMin: 1300,
+        budgetEurMax: 2460,
+        badge: "Turismo & Discoteche",
+        badgeColor: "bg-red-900/60 text-red-300 border-red-700",
+        summary: "Epicentro del turismo internazionale con spiagge ampie, centri commerciali e divertimento no-stop.",
+        datingDynamic: "Patong è orientata quasi unicamente al turismo veloce: fare incontri casuali è immediato, ma trovare una compagna per la vita qui presenta rischi elevati.",
+        nightlifeDetail: "Bangla Road con discoteche di caratura mondiale (Illuzion), club sulla spiaggia e bar continui.",
+        healthcare: "Bangkok Hospital Phuket e Patong Hospital.",
+        housing: "Appartamenti turistici da 20.000 a 45.000 THB/mese.",
+        pros: ["Divertimento ai massimi livelli", "Aeroporto internazionale diretto", "Servizi completi"],
+        cons: ["Costi altissimi", "Difficile trovare una compagna affidabile a Patong"]
+      },
+      {
+        id: "kosamui",
+        name: "Ko Samui",
+        zone: "Golfo di Thailandia",
+        type: "Isola Esotica",
+        nightlife: 8.0,
+        dating: 6.5,
+        cost: 6.0,
+        services: 7.5,
+        beachQuality: 9.0,
+        budgetThb: "45.000 - 80.000",
+        budgetEurMin: 1170,
+        budgetEurMax: 2080,
+        badge: "Relax & Beach Club",
+        badgeColor: "bg-teal-900/60 text-teal-300 border-teal-700",
+        summary: "Fascino tropicale tra palme da cocco, mare calmo e serate nei beach club di Chaweng.",
+        datingDynamic: "Comunità isolana ristretta. Incontri frequenti con lavoratrici dell'ospitalità o viaggiatrici. Più difficile per matrimoni a lungo termine stanziali.",
+        nightlifeDetail: "Chaweng (Ark Bar, Soi Green Mango), serate raffinate al Fisherman's Village di Bophut.",
+        healthcare: "Bangkok Hospital Samui e Samui International Hospital.",
+        housing: "Bungalow sul mare o ville collinari (affitti rincarati dall'alta stagione).",
+        pros: ["Atmosfera isolana autentica", "Cucina eccellente fronte mare", "Spiagge sicure e pulite"],
+        cons: ["Voli aerei monopolizzati da Bangkok Airways", "Costi dei trasporti elevati"]
+      },
+      {
+        id: "chiangmai",
+        name: "Chiang Mai",
+        zone: "Nord (Montagna)",
+        type: "Cultura & Natura",
+        nightlife: 6.5,
+        dating: 8.2,
+        cost: 9.0,
+        services: 8.5,
+        beachQuality: 1.0,
+        budgetThb: "30.000 - 50.000",
+        budgetEurMin: 780,
+        budgetEurMax: 1300,
+        badge: "Capitale Nomadi Digitali",
+        badgeColor: "bg-orange-900/60 text-orange-300 border-orange-700",
+        summary: "Fascino del nord tra templi, caffè gourmet, coworking moderni e clima montano più fresco.",
+        datingDynamic: "Donne del nord tradizionalmente gentili, universitarie e con mentalità aperta. Molti espatriati trovano moglie qui.",
+        nightlifeDetail: "Zoe in Yellow nel centro storico, bar con musica jazz (North Gate), pub lungo il fiume Ping e a Nimman.",
+        healthcare: "Chiang Mai Ram Hospital e Bangkok Hospital Chiang Mai.",
+        housing: "Affitti molto convenienti a Nimmanhaemin o vicino alla Città Vecchia (da 9.000 a 18.000 THB).",
+        pros: ["Costo della vita eccezionale", "Cultura, caffè e cibo squisiti", "Comunità expat giovane"],
+        cons: ["Niente mare", "Inquinamento da roghi agricoli da febbraio ad aprile (Smoky Season)"]
+      }
+    ];
+
+    // Mobile Sidebar Drawer Helpers
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('main-sidebar');
+      const backdrop = document.getElementById('mobile-sidebar-backdrop');
+      const isClosed = sidebar.classList.contains('-translate-x-full');
+      
+      if (isClosed) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    function closeMobileSidebarIfOpen() {
+      const sidebar = document.getElementById('main-sidebar');
+      const backdrop = document.getElementById('mobile-sidebar-backdrop');
+      if (window.innerWidth < 768) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    // Modal Add City Helpers
+    function openNewCityModal() {
+      closeMobileSidebarIfOpen();
+      document.getElementById('add-city-modal').classList.remove('hidden');
+      document.getElementById('new-city-input').focus();
+    }
+
+    function closeNewCityModal() {
+      document.getElementById('add-city-modal').classList.add('hidden');
+      document.getElementById('ai-loading-indicator').classList.add('hidden');
+      document.getElementById('ai-error-message').classList.add('hidden');
+      document.getElementById('btn-submit-city').disabled = false;
+      document.getElementById('new-city-input').value = '';
+    }
+
+    function fillExample(name) {
+      document.getElementById('new-city-input').value = name;
+    }
+
+    // Gemini API integration for city autocompletion
+    async function fetchWithRetry(url, options, maxRetries = 3) {
+      let delay = 1000;
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          const res = await fetch(url, options);
+          if (res.ok) return res;
+        } catch (err) {
+          // Silent retry
+        }
+        await new Promise(r => setTimeout(r, delay));
+        delay *= 2;
+      }
+      return fetch(url, options);
+    }
+
+    async function handleGenerateCity(event) {
+      event.preventDefault();
+      const cityName = document.getElementById('new-city-input').value.trim();
+      if (!cityName) return;
+
+      const loader = document.getElementById('ai-loading-indicator');
+      const errorBox = document.getElementById('ai-error-message');
+      const submitBtn = document.getElementById('btn-submit-city');
+
+      loader.classList.remove('hidden');
+      errorBox.classList.add('hidden');
+      submitBtn.disabled = true;
+
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview:generateContent?key=${apiKey}`;
+
+      const systemPrompt = `Sei il massimo esperto di espatrio, pensionamento e vita in Thailandia.
+L'utente ti fornirà il nome di una località o isola thailandese. Restituisci ESCLUSIVAMENTE un oggetto JSON valido che rispetti rigorosamente lo schema fornito, con testi in lingua italiana adatti a un pensionato o espatriato di 50-60 anni che cerca: vita notturna, relazioni stabili e compagna duratura, budget di vita mensile realistico e qualità della sanità.`;
+
+      const promptText = `Genera i dati completi per la località thailandese: "${cityName}".`;
+
+      const payload = {
+        contents: [
+          { role: "user", parts: [{ text: promptText }] }
+        ],
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              id: { type: "STRING" },
+              name: { type: "STRING" },
+              zone: { type: "STRING" },
+              type: { type: "STRING" },
+              nightlife: { type: "NUMBER", description: "Voto da 1 a 10 per locali e movida" },
+              dating: { type: "NUMBER", description: "Voto da 1 a 10 per facilità di trovare moglie o compagna seria e duratura per un 60enne" },
+              cost: { type: "NUMBER", description: "Voto da 1 a 10 per convenienza economica (10 = super economico)" },
+              services: { type: "NUMBER", description: "Voto da 1 a 10 per qualità ospedali e comodità" },
+              beachQuality: { type: "NUMBER", description: "Voto da 1 a 10 per mare e spiagge (1 se non c'è il mare)" },
+              budgetThb: { type: "STRING", description: "Range mensile in Baht, es. 28.000 - 45.000" },
+              budgetEurMin: { type: "INTEGER", description: "Spesa minima mensile in Euro" },
+              budgetEurMax: { type: "INTEGER", description: "Spesa confortevole mensile in Euro" },
+              badge: { type: "STRING", description: "Titolo sintetico breve, es. Natura & Serenità" },
+              badgeColor: { type: "STRING", description: "Classe tailwind per badge (usa: bg-teal-900/60 text-teal-300 border-teal-700 oppure bg-cyan-900/60 text-cyan-300 border-cyan-700)" },
+              summary: { type: "STRING", description: "Breve sintesi di 1-2 frasi" },
+              datingDynamic: { type: "STRING", description: "Dettaglio su come trovare una compagna seria a 50-60 anni in questa zona" },
+              nightlifeDetail: { type: "STRING", description: "Dettaglio sulla vita serale, bar, musica live" },
+              healthcare: { type: "STRING", description: "Ospedali principali e cliniche private vicine" },
+              housing: { type: "STRING", description: "Tipologia e costo degli affitti mensili" },
+              pros: { type: "ARRAY", items: { type: "STRING" } },
+              cons: { type: "ARRAY", items: { type: "STRING" } }
+            },
+            required: ["id", "name", "zone", "type", "nightlife", "dating", "cost", "services", "beachQuality", "budgetThb", "budgetEurMin", "budgetEurMax", "badge", "badgeColor", "summary", "datingDynamic", "nightlifeDetail", "healthcare", "housing", "pros", "cons"]
+          }
+        }
+      };
+
+      try {
+        const response = await fetchWithRetry(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error(`Errore API Gemini (${response.status})`);
+        }
+
+        const result = await response.json();
+        const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!jsonText) throw new Error("Risposta vuota da Gemini");
+
+        const newCity = JSON.parse(jsonText);
+        newCity.id = (newCity.id || cityName.toLowerCase().replace(/[^a-z0-9]/g, '')) + '-' + Date.now().toString().slice(-4);
+        if (!newCity.badgeColor) newCity.badgeColor = "bg-teal-900/60 text-teal-300 border-teal-700";
+
+        destinations.unshift(newCity);
+
+        document.getElementById('nav-count-badge').textContent = `${destinations.length} mete`;
+        renderLeaderboard();
+        renderCards();
+        renderRadarButtons();
+        updateCostBarChart();
+        updateRadarChart();
+
+        closeNewCityModal();
+        scrollToSection('leaderboard-section');
+        
+        setTimeout(() => openModal(newCity.id), 400);
+
+      } catch (err) {
+        errorBox.textContent = `Impossibile completare l'autocompilazione: ${err.message}. Riprova tra poco.`;
+        errorBox.classList.remove('hidden');
+      } finally {
+        loader.classList.add('hidden');
+        submitBtn.disabled = false;
+      }
+    }
+
+    function updateCostBarChart() {
+      if (!costChartInstance) return;
+      costChartInstance.data.labels = destinations.map(d => d.name);
+      costChartInstance.data.datasets[0].data = destinations.map(d => d.budgetEurMin);
+      costChartInstance.data.datasets[1].data = destinations.map(d => d.budgetEurMax);
+      costChartInstance.update();
+    }
+
+    // State Variables
+    let currentSort = 'score';
+    let searchQuery = '';
+    let activeRadarCities = ['jomtien', 'sattahip', 'pattaya', 'udonthani'];
+    let radarChartInstance = null;
+    let costChartInstance = null;
+
+    // Refresh & Recalculate function
+    function refreshData() {
+      const icons = [document.getElementById('sidebar-refresh-icon'), document.getElementById('mobile-refresh-icon')];
+      icons.forEach(icon => {
+        if (icon) icon.classList.add('animate-spin');
+      });
+
+      renderLeaderboard();
+      renderCards();
+      renderRadarButtons();
+      updateRadarChart();
+      updateCostBarChart();
+
+      const toast = document.createElement('div');
+      toast.className = "fixed bottom-5 right-5 z-50 bg-cyan-950 border border-cyan-500 text-cyan-200 px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2 animate-bounce";
+      toast.innerHTML = "<span>✅</span><span>Classifica e grafici aggiornati con successo!</span>";
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        icons.forEach(icon => {
+          if (icon) icon.classList.remove('animate-spin');
+        });
+        toast.remove();
+      }, 1200);
+    }
+
+    // Weight Calculation and Sorting Functions
+    function getWeights() {
+      return {
+        nightlife: parseFloat(document.getElementById('w-nightlife').value) / 100,
+        dating: parseFloat(document.getElementById('w-dating').value) / 100,
+        cost: parseFloat(document.getElementById('w-cost').value) / 100,
+        services: parseFloat(document.getElementById('w-services').value) / 100
+      };
+    }
+
+    function calculateScore(item) {
+      const w = getWeights();
+      const totalWeight = w.nightlife + w.dating + w.cost + w.services;
+      if (totalWeight === 0) return 0;
+      const weightedSum = (item.nightlife * w.nightlife) +
+                          (item.dating * w.dating) +
+                          (item.cost * w.cost) +
+                          (item.services * w.services);
+      return (weightedSum / totalWeight).toFixed(1);
+    }
+
+    function getSortedDestinations() {
+      let filtered = destinations.filter(d => {
+        if (!searchQuery.trim()) return true;
+        const q = searchQuery.toLowerCase();
+        return d.name.toLowerCase().includes(q) ||
+               d.zone.toLowerCase().includes(q) ||
+               d.type.toLowerCase().includes(q) ||
+               d.badge.toLowerCase().includes(q);
+      });
+
+      return filtered.sort((a, b) => {
+        if (currentSort === 'score') {
+          return parseFloat(calculateScore(b)) - parseFloat(calculateScore(a));
+        } else if (currentSort === 'nightlife') {
+          return b.nightlife - a.nightlife;
+        } else if (currentSort === 'dating') {
+          return b.dating - a.dating;
+        } else if (currentSort === 'cost') {
+          return b.cost - a.cost;
+        } else if (currentSort === 'services') {
+          return b.services - a.services;
+        }
+        return 0;
+      });
+    }
+
+    function changeSort(sortKey) {
+      currentSort = sortKey;
+
+      const buttons = ['score', 'nightlife', 'dating', 'cost', 'services'];
+      buttons.forEach(key => {
+        const btn = document.getElementById(`th-btn-${key}`);
+        const indicator = document.getElementById(`th-sort-${key}`);
+        if (!btn || !indicator) return;
+
+        if (key === sortKey) {
+          btn.className = "w-full py-1.5 px-2 rounded-lg font-bold bg-cyan-600 text-white flex items-center justify-center gap-1 transition shadow-sm border border-cyan-400/40";
+          indicator.textContent = '▼';
+          indicator.className = 'text-xs text-white';
+        } else {
+          let textCol = 'text-slate-300';
+          if (key === 'nightlife') textCol = 'text-purple-300';
+          if (key === 'dating') textCol = 'text-pink-300';
+          if (key === 'cost') textCol = 'text-emerald-300';
+          if (key === 'services') textCol = 'text-cyan-300';
+
+          btn.className = `w-full py-1.5 px-1.5 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 ${textCol} flex items-center justify-center gap-1 transition border border-slate-700`;
+          indicator.textContent = '↕';
+          indicator.className = 'text-[10px] text-slate-500';
+        }
+      });
+
+      renderLeaderboard();
+      renderCards();
+    }
+
+    function updateWeights() {
+      const nightlife = document.getElementById('w-nightlife').value;
+      const dating = document.getElementById('w-dating').value;
+      const cost = document.getElementById('w-cost').value;
+      const services = document.getElementById('w-services').value;
+
+      document.getElementById('val-nightlife').textContent = nightlife + '%';
+      document.getElementById('val-dating').textContent = dating + '%';
+      document.getElementById('val-cost').textContent = cost + '%';
+      document.getElementById('val-services').textContent = services + '%';
+
+      renderLeaderboard();
+      renderCards();
+    }
+
+    function resetWeights() {
+      document.getElementById('w-nightlife').value = 25;
+      document.getElementById('w-dating').value = 25;
+      document.getElementById('w-cost').value = 25;
+      document.getElementById('w-services').value = 25;
+
+      updateWeights();
+    }
+
+    function handleSearch(query) {
+      searchQuery = query;
+      renderLeaderboard();
+      renderCards();
+    }
+
+    function renderLeaderboard() {
+      const tbody = document.getElementById('leaderboard-body');
+      tbody.innerHTML = '';
+      const sorted = getSortedDestinations();
+
+      if (sorted.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">Nessuna destinazione corrisponde alla ricerca.</td></tr>`;
+        return;
+      }
+
+      sorted.forEach((item, index) => {
+        const score = calculateScore(item);
+        const rankMedal = index === 0 ? '🥇 1' : (index === 1 ? '🥈 2' : (index === 2 ? '🥉 3' : `${index + 1}`));
+        const row = document.createElement('tr');
+        row.className = "hover:bg-slate-800/60 transition cursor-pointer group border-b border-bordercol/40";
+        row.onclick = () => openModal(item.id);
+
+        row.innerHTML = `
+          <!-- 1. Posizione -->
+          <td class="py-3.5 px-2 text-center font-bold text-sm ${index < 3 ? 'text-amber-300' : 'text-slate-400'}">
+            ${rankMedal}
+          </td>
+
+          <!-- 2. Città e Contesto -->
+          <td class="py-3.5 px-4">
+            <div class="flex flex-col items-start gap-1">
+              <span class="font-bold text-sm text-white group-hover:text-cyan-300 transition tracking-wide leading-tight">
+                ${item.name}
+              </span>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="badge-pill ${item.badgeColor} text-[10px] py-0.5 px-2 leading-tight">
+                  ${item.badge}
+                </span>
+                <span class="text-[11px] text-slate-400">${item.zone}</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- 3. Score Globale -->
+          <td class="py-3.5 px-2 text-center">
+            <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-black bg-cyan-950/80 text-cyan-300 border border-cyan-700/60 font-mono shadow-sm">
+              ${score} / 10
+            </span>
+          </td>
+
+          <!-- 4. Notturna -->
+          <td class="py-3.5 px-2 text-center">
+            <span class="inline-block font-mono font-bold text-purple-300 text-sm bg-purple-950/40 px-2 py-0.5 rounded border border-purple-900/40">
+              ${item.nightlife.toFixed(1)}
+            </span>
+          </td>
+
+          <!-- 5. Incontri Stabili -->
+          <td class="py-3.5 px-2 text-center">
+            <span class="inline-block font-mono font-bold text-pink-300 text-sm bg-pink-950/40 px-2 py-0.5 rounded border border-pink-900/40">
+              ${item.dating.toFixed(1)}
+            </span>
+          </td>
+
+          <!-- 6. Convenienza Costo -->
+          <td class="py-3.5 px-2 text-center">
+            <span class="inline-block font-mono font-bold text-emerald-300 text-sm bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/40">
+              ${item.cost.toFixed(1)}
+            </span>
+          </td>
+
+          <!-- 7. Sanità & Servizi -->
+          <td class="py-3.5 px-2 text-center">
+            <span class="inline-block font-mono font-bold text-cyan-300 text-sm bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-900/40">
+              ${item.services.toFixed(1)}
+            </span>
+          </td>
+
+          <!-- 8. Budget Mensile (€ e THB) -->
+          <td class="py-3.5 px-3 text-right">
+            <div class="font-mono font-bold text-slate-100 text-xs">${item.budgetEurMin}€ – ${item.budgetEurMax}€</div>
+            <div class="text-[10px] text-slate-400 font-mono">${item.budgetThb} ฿</div>
+          </td>
+
+          <!-- 9. Azione Dettagli -->
+          <td class="py-3.5 px-3 text-center">
+            <button class="px-2.5 py-1 text-xs bg-slate-800 group-hover:bg-cyan-600 group-hover:text-white rounded border border-bordercol text-slate-300 transition font-semibold" onclick="event.stopPropagation(); openModal('${item.id}')">
+              Apri ➔
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Render City Cards
+    function renderCards() {
+      const container = document.getElementById('city-cards-grid');
+      container.innerHTML = '';
+      const sorted = getSortedDestinations();
+
+      sorted.forEach((item) => {
+        const score = calculateScore(item);
+        const card = document.createElement('div');
+        card.className = "bg-cardbg border border-bordercol rounded-2xl p-5 hover:border-cyan-500/50 hover:shadow-cyan-950/20 hover:shadow-xl transition flex flex-col justify-between group";
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <span class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">${item.zone}</span>
+                <h3 class="text-xl font-black text-white group-hover:text-cyan-300 transition">${item.name}</h3>
+              </div>
+              <div class="text-right">
+                <span class="inline-block px-2.5 py-0.5 rounded-lg text-xs font-black bg-cyan-950 text-cyan-300 border border-cyan-700">
+                  ★ ${score}
+                </span>
+              </div>
+            </div>
+
+            <span class="badge-pill ${item.badgeColor} mb-3">${item.badge}</span>
+            <p class="text-xs text-slate-300 mb-4 leading-relaxed">${item.summary}</p>
+
+            <!-- Metrics Bars -->
+            <div class="space-y-2 text-xs mb-5 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+              <div>
+                <div class="flex justify-between text-[11px] mb-1">
+                  <span class="text-purple-300 font-medium">🍸 Vita Notturna</span>
+                  <span class="text-slate-200 font-bold">${item.nightlife}/10</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-purple-500 h-1.5 rounded-full" style="width: ${item.nightlife * 10}%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-[11px] mb-1">
+                  <span class="text-pink-300 font-medium">💍 Incontri Stabili</span>
+                  <span class="text-slate-200 font-bold">${item.dating}/10</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-pink-500 h-1.5 rounded-full" style="width: ${item.dating * 10}%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-[11px] mb-1">
+                  <span class="text-emerald-300 font-medium">💰 Convenienza Spese</span>
+                  <span class="text-slate-200 font-bold">${item.cost}/10</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-emerald-500 h-1.5 rounded-full" style="width: ${item.cost * 10}%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-[11px] mb-1">
+                  <span class="text-cyan-300 font-medium">🏥 Sanità & Servizi</span>
+                  <span class="text-slate-200 font-bold">${item.services}/10</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-cyan-500 h-1.5 rounded-full" style="width: ${item.services * 10}%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-bordercol flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-slate-400 block">Budget mensile:</span>
+              <span class="text-xs font-mono font-bold text-slate-200">${item.budgetEurMin}€ - ${item.budgetEurMax}€</span>
+            </div>
+            <button onclick="openModal('${item.id}')" class="text-xs bg-slate-800 hover:bg-cyan-600 hover:text-white px-3 py-1.5 rounded-lg border border-bordercol transition font-semibold">
+              Scheda ➔
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Modal Handling
+    function openModal(id) {
+      const item = destinations.find(d => d.id === id);
+      if (!item) return;
+      const score = calculateScore(item);
+      const modal = document.getElementById('city-modal');
+      const content = document.getElementById('modal-content');
+
+      content.innerHTML = `
+        <div class="space-y-5">
+          <div class="border-b border-bordercol pb-4">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <span class="badge-pill ${item.badgeColor} mb-2">${item.badge}</span>
+                <h3 class="text-2xl font-black text-white">${item.name}</h3>
+                <p class="text-xs text-slate-400">${item.zone} • ${item.type}</p>
+              </div>
+              <div class="text-right">
+                <span class="text-xs text-slate-400 block">Punteggio:</span>
+                <span class="text-xl font-black text-cyan-300 font-mono">${score} / 10</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Metrics Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-center">
+              <span class="text-[10px] text-purple-300 block font-bold">Vita Notturna</span>
+              <span class="text-lg font-black text-white">${item.nightlife}/10</span>
+            </div>
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-center">
+              <span class="text-[10px] text-pink-300 block font-bold">Incontri Stabili</span>
+              <span class="text-lg font-black text-white">${item.dating}/10</span>
+            </div>
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-center">
+              <span class="text-[10px] text-emerald-300 block font-bold">Convenienza</span>
+              <span class="text-lg font-black text-white">${item.cost}/10</span>
+            </div>
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-center">
+              <span class="text-[10px] text-cyan-300 block font-bold">Sanità & Servizi</span>
+              <span class="text-lg font-black text-white">${item.services}/10</span>
+            </div>
+          </div>
+
+          <!-- In-depth Details -->
+          <div class="space-y-3.5 text-xs text-slate-200">
+            <div class="bg-slate-900/70 p-3.5 rounded-xl border border-bordercol">
+              <h4 class="font-bold text-pink-300 text-sm mb-1 flex items-center gap-1.5">
+                <span>💍</span> Trovare Compagna / Dinamica Relazioni
+              </h4>
+              <p class="leading-relaxed text-slate-300">${item.datingDynamic}</p>
+            </div>
+
+            <div class="bg-slate-900/70 p-3.5 rounded-xl border border-bordercol">
+              <h4 class="font-bold text-purple-300 text-sm mb-1 flex items-center gap-1.5">
+                <span>🍸</span> Scena Notturna & Locali
+              </h4>
+              <p class="leading-relaxed text-slate-300">${item.nightlifeDetail}</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="bg-slate-900/70 p-3 rounded-xl border border-bordercol">
+                <h4 class="font-bold text-cyan-300 text-xs mb-1">🏥 Ospedali & Sanità</h4>
+                <p class="text-slate-300 text-[11px]">${item.healthcare}</p>
+              </div>
+              <div class="bg-slate-900/70 p-3 rounded-xl border border-bordercol">
+                <h4 class="font-bold text-amber-300 text-xs mb-1">🏠 Alloggi & Costo Casa</h4>
+                <p class="text-slate-300 text-[11px]">${item.housing}</p>
+              </div>
+            </div>
+
+            <!-- Pros & Cons -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div class="bg-emerald-950/30 border border-emerald-800/40 p-3 rounded-xl">
+                <span class="text-emerald-300 font-bold text-xs block mb-1.5">✅ Punti di Forza</span>
+                <ul class="list-disc list-inside space-y-1 text-slate-300 text-[11px]">
+                  ${item.pros.map(p => `<li>${p}</li>`).join('')}
+                </ul>
+              </div>
+              <div class="bg-rose-950/30 border border-rose-800/40 p-3 rounded-xl">
+                <span class="text-rose-300 font-bold text-xs block mb-1.5">⚠️ Aspetti da Valutare</span>
+                <ul class="list-disc list-inside space-y-1 text-slate-300 text-[11px]">
+                  ${item.cons.map(c => `<li>${c}</li>`).join('')}
+                </ul>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-950 rounded-xl border border-bordercol flex justify-between items-center text-xs">
+              <span class="text-slate-400">Budget mensile consigliato:</span>
+              <span class="font-mono font-bold text-cyan-300 text-sm">${item.budgetEurMin}€ - ${item.budgetEurMax}€ (${item.budgetThb} THB)</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('city-modal').classList.add('hidden');
+    }
+
+    // Close modal on click outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('city-modal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+
+    // Toggle city for Radar Chart
+    function toggleRadarCity(id) {
+      if (activeRadarCities.includes(id)) {
+        if (activeRadarCities.length <= 2) return;
+        activeRadarCities = activeRadarCities.filter(c => c !== id);
+      } else {
+        if (activeRadarCities.length >= 5) activeRadarCities.shift();
+        activeRadarCities.push(id);
+      }
+      renderRadarButtons();
+      updateRadarChart();
+    }
+
+    function renderRadarButtons() {
+      const container = document.getElementById('radar-toggles');
+      container.innerHTML = '';
+      destinations.forEach(d => {
+        const isActive = activeRadarCities.includes(d.id);
+        const btn = document.createElement('button');
+        btn.onclick = () => toggleRadarCity(d.id);
+        btn.className = `text-[11px] px-2.5 py-1 rounded-md font-semibold transition border ${
+          isActive 
+            ? 'bg-cyan-600 text-white border-cyan-400' 
+            : 'bg-slate-900 text-slate-400 border-slate-700 hover:text-white'
+        }`;
+        btn.innerText = d.name;
+        container.appendChild(btn);
+      });
+    }
+
+    // Chart.js Radar Initialization & Update
+    const chartColors = [
+      { border: '#06b6d4', bg: 'rgba(6, 182, 212, 0.25)' },
+      { border: '#ec4899', bg: 'rgba(236, 72, 153, 0.25)' },
+      { border: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.25)' },
+      { border: '#10b981', bg: 'rgba(16, 185, 129, 0.25)' },
+      { border: '#f59e0b', bg: 'rgba(245, 158, 11, 0.25)' },
+    ];
+
+    function initRadarChart() {
+      const ctx = document.getElementById('comparisonRadarChart').getContext('2d');
+      const radarLabels = ['Vita Notturna', 'Incontri Stabili', 'Costo Basso', 'Sanità & Servizi', 'Mare / Ambiente'];
+
+      const datasets = activeRadarCities.map((cityId, index) => {
+        const d = destinations.find(item => item.id === cityId);
+        const color = chartColors[index % chartColors.length];
+        return {
+          label: d.name,
+          data: [d.nightlife, d.dating, d.cost, d.services, d.beachQuality],
+          borderColor: color.border,
+          backgroundColor: color.bg,
+          pointBackgroundColor: color.border,
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: color.border,
+          borderWidth: 2,
+        };
+      });
+
+      radarChartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: radarLabels,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { color: 'rgba(100, 116, 139, 0.3)' },
+              grid: { color: 'rgba(100, 116, 139, 0.2)' },
+              pointLabels: {
+                color: '#cbd5e1',
+                font: { size: 11, family: 'Inter', weight: '600' }
+              },
+              suggestedMin: 0,
+              suggestedMax: 10,
+              ticks: {
+                stepSize: 2,
+                backdropColor: 'transparent',
+                color: '#64748b'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#e2e8f0',
+                font: { family: 'Inter', size: 12 }
+              }
+            },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleColor: '#38bdf8',
+              bodyColor: '#f1f5f9',
+              borderColor: '#334155',
+              borderWidth: 1
+            }
+          }
+        }
+      });
+    }
+
+    function updateRadarChart() {
+      if (!radarChartInstance) return;
+      const datasets = activeRadarCities.map((cityId, index) => {
+        const d = destinations.find(item => item.id === cityId);
+        const color = chartColors[index % chartColors.length];
+        return {
+          label: d.name,
+          data: [d.nightlife, d.dating, d.cost, d.services, d.beachQuality],
+          borderColor: color.border,
+          backgroundColor: color.bg,
+          pointBackgroundColor: color.border,
+          pointBorderColor: '#fff',
+          borderWidth: 2,
+        };
+      });
+      radarChartInstance.data.datasets = datasets;
+      radarChartInstance.update();
+    }
+
+    // Chart.js Bar Chart for Estimated Monthly Budget in Euros
+    function initCostBarChart() {
+      const ctx = document.getElementById('costBarChart').getContext('2d');
+      const labels = destinations.map(d => d.name);
+      const minData = destinations.map(d => d.budgetEurMin);
+      const maxData = destinations.map(d => d.budgetEurMax);
+
+      costChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Spesa Minima (€/mese)',
+              data: minData,
+              backgroundColor: 'rgba(16, 185, 129, 0.7)',
+              borderColor: '#10b981',
+              borderWidth: 1,
+              borderRadius: 6
+            },
+            {
+              label: 'Spesa Confortevole (€/mese)',
+              data: maxData,
+              backgroundColor: 'rgba(6, 182, 212, 0.7)',
+              borderColor: '#06b6d4',
+              borderWidth: 1,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          scales: {
+            x: {
+              grid: { color: 'rgba(100, 116, 139, 0.15)' },
+              ticks: { color: '#94a3b8', font: { size: 10 } }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: '#e2e8f0', font: { weight: '600', size: 11 } }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { color: '#cbd5e1', font: { size: 11 } }
+            },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleColor: '#38bdf8',
+              bodyColor: '#f1f5f9',
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.x + ' €';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Smooth navigation helper
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      const container = document.getElementById('main-content-scroll');
+      if (el && container) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // App Initialization
+    function initApp() {
+      try {
+        renderLeaderboard();
+        renderCards();
+        renderRadarButtons();
+        initRadarChart();
+        initCostBarChart();
+      } catch (e) {
+        console.error("Inizializzazione grafici o tabelle:", e);
+        // Fallback garantito per mostrare la classifica e le card anche in caso di problemi grafici
+        renderLeaderboard();
+        renderCards();
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
