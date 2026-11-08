@@ -89,6 +89,21 @@
       will-change: transform;
       z-index: 9999 !important;
     }
+
+    /* Rende sticky l'header della tabella sia orizzontalmente che verticalmente su mobile/desktop */
+    .table-container-sticky {
+      position: relative;
+      max-height: 75vh;
+      overflow-y: auto;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .table-container-sticky thead th {
+      position: sticky;
+      top: 0;
+      z-index: 25;
+      background-color: #0f172a;
+    }
   </style>
 </head>
 <body class="bg-darkbg text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white min-h-screen md:h-screen md:overflow-hidden flex flex-col md:flex-row pb-20 md:pb-0">
@@ -277,8 +292,8 @@
         </div>
       </div>
 
-      <!-- Quick Sort Filter Chips per Mobile (Scrollabile orizzontalmente con il pollice) -->
-      <div class="md:hidden flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none text-[11px] font-semibold -mx-1 px-1">
+      <!-- Quick Sort Filter Chips per Mobile (Resa Sticky in cima su mobile) -->
+      <div id="mob-sort-bar" class="md:hidden sticky top-12 z-20 bg-darkbg/95 backdrop-blur-md py-2 -mx-3 px-3 border-b border-bordercol/60 flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[11px] font-semibold">
         <span class="text-[10px] text-slate-400 font-bold uppercase shrink-0">Filtra:</span>
         <button onclick="changeSort('score')" id="mob-sort-score" class="shrink-0 px-2.5 py-1 rounded-lg bg-cyan-600 text-white border border-cyan-400/40">
           ★ Score
@@ -302,8 +317,8 @@
         <!-- Generato via JS -->
       </div>
 
-      <!-- VISTA 2: Table Container Desktop (Visibile solo da schermi medi/grandi in su) -->
-      <div class="hidden md:block overflow-x-auto rounded-xl border border-bordercol bg-cardbg shadow-xl">
+      <!-- VISTA 2: Table Container Desktop & Schermi Orizzontali (Con thead bloccato e sticky top fisso) -->
+      <div class="hidden md:block rounded-xl border border-bordercol bg-cardbg shadow-xl table-container-sticky">
         <table class="w-full table-fixed text-left text-xs sm:text-sm border-collapse min-w-[920px]">
           <colgroup>
             <col class="w-[50px]">               <!-- Posizione -->
@@ -318,46 +333,46 @@
           </colgroup>
           <thead class="sticky top-0 z-30 bg-slate-900 shadow-md text-slate-200 text-xs font-semibold select-none border-b-2 border-bordercol">
             <tr>
-              <th scope="col" class="py-3 px-2 text-center text-slate-400 font-bold">
+              <th scope="col" class="py-3 px-2 text-center text-slate-400 font-bold bg-slate-900">
                 #
               </th>
-              <th scope="col" class="py-3 px-4 text-left">
+              <th scope="col" class="py-3 px-4 text-left bg-slate-900">
                 <span class="text-slate-300 font-bold uppercase tracking-wider text-[11px]">Città & Contesto</span>
               </th>
-              <th scope="col" class="py-2.5 px-2 text-center">
+              <th scope="col" class="py-2.5 px-2 text-center bg-slate-900">
                 <button type="button" onclick="changeSort('score')" id="th-btn-score" class="w-full py-1.5 px-2 rounded-lg font-bold bg-cyan-600 text-white flex items-center justify-center gap-1 transition shadow-sm border border-cyan-400/40">
                   <span>Score Totale</span>
                   <span id="th-sort-score" class="text-xs">▼</span>
                 </button>
               </th>
-              <th scope="col" class="py-2.5 px-1.5 text-center">
+              <th scope="col" class="py-2.5 px-1.5 text-center bg-slate-900">
                 <button type="button" onclick="changeSort('nightlife')" id="th-btn-nightlife" class="w-full py-1.5 px-1.5 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 text-purple-300 flex items-center justify-center gap-1 transition border border-slate-700">
                   <span>🍸 Notturna</span>
                   <span id="th-sort-nightlife" class="text-[10px] text-slate-500">↕</span>
                 </button>
               </th>
-              <th scope="col" class="py-2.5 px-1.5 text-center">
+              <th scope="col" class="py-2.5 px-1.5 text-center bg-slate-900">
                 <button type="button" onclick="changeSort('dating')" id="th-btn-dating" class="w-full py-1.5 px-1.5 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 text-pink-300 flex items-center justify-center gap-1 transition border border-slate-700">
                   <span>💍 Relazioni</span>
                   <span id="th-sort-dating" class="text-[10px] text-slate-500">↕</span>
                 </button>
               </th>
-              <th scope="col" class="py-2.5 px-1.5 text-center">
+              <th scope="col" class="py-2.5 px-1.5 text-center bg-slate-900">
                 <button type="button" onclick="changeSort('cost')" id="th-btn-cost" class="w-full py-1.5 px-1.5 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 text-emerald-300 flex items-center justify-center gap-1 transition border border-slate-700">
                   <span>💰 Costo</span>
                   <span id="th-sort-cost" class="text-[10px] text-slate-500">↕</span>
                 </button>
               </th>
-              <th scope="col" class="py-2.5 px-1.5 text-center">
+              <th scope="col" class="py-2.5 px-1.5 text-center bg-slate-900">
                 <button type="button" onclick="changeSort('services')" id="th-btn-services" class="w-full py-1.5 px-1.5 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 text-cyan-300 flex items-center justify-center gap-1 transition border border-slate-700">
                   <span>🏥 Sanità</span>
                   <span id="th-sort-services" class="text-[10px] text-slate-500">↕</span>
                 </button>
               </th>
-              <th scope="col" class="py-3 px-3 text-right text-slate-300 uppercase tracking-wider text-[11px] font-bold">
+              <th scope="col" class="py-3 px-3 text-right text-slate-300 uppercase tracking-wider text-[11px] font-bold bg-slate-900">
                 Budget (€/m)
               </th>
-              <th scope="col" class="py-3 px-2 text-center text-slate-400 uppercase tracking-wider text-[11px] font-bold">
+              <th scope="col" class="py-3 px-2 text-center text-slate-400 uppercase tracking-wider text-[11px] font-bold bg-slate-900">
                 Dettagli
               </th>
             </tr>
