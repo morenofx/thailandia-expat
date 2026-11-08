@@ -68,20 +68,33 @@
     }
     /* iPhone Safe Area support & smooth momentum scroll */
     .safe-top {
-      padding-top: env(safe-area-inset-top, 0px);
+      padding-top: max(10px, env(safe-area-inset-top, 10px));
     }
     .safe-bottom {
-      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
     }
     .smooth-scroll-touch {
       -webkit-overflow-scrolling: touch;
     }
+
+    /* Blocca qualsiasi slittamento/rimbalzo involontario della barra superiore */
+    #mobile-fixed-header {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100vw !important;
+      transform: translateZ(0); /* Forza accelerazione hardware GPU */
+      -webkit-transform: translateZ(0);
+      will-change: transform;
+      z-index: 9999 !important;
+    }
   </style>
 </head>
-<body class="bg-darkbg text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white h-screen overflow-hidden flex flex-col md:flex-row pb-16 md:pb-0">
+<body class="bg-darkbg text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white min-h-screen md:h-screen md:overflow-hidden flex flex-col md:flex-row pb-20 md:pb-0">
 
-  <!-- TOP BAR MOBILE (iPhone Friendly con Safe Area - BLOCCATA FISSA IN CIMA CON FIXED) -->
-  <header class="md:hidden fixed top-0 inset-x-0 bg-slate-900/98 backdrop-blur-md border-b border-bordercol px-3.5 py-2.5 safe-top flex items-center justify-between shrink-0 z-50 shadow-lg">
+  <!-- TOP BAR MOBILE (INCHIODATA FISSA AL 100% SU IPHONE CON ACCELERAZIONE GPU) -->
+  <header id="mobile-fixed-header" class="md:hidden bg-slate-900/95 backdrop-blur-md border-b border-bordercol px-3.5 py-2.5 safe-top flex items-center justify-between shrink-0 shadow-xl">
     <div class="flex items-center gap-2">
       <span class="text-2xl">🇹🇭</span>
       <div>
@@ -249,7 +262,7 @@
 </aside>
 
   <!-- CONTENUTO PRINCIPALE A DESTRA A SCORRIMENTO INDIPENDENTE (CON PADDING-TOP SU MOBILE PER EVITARE LA BARRA FISSA) -->
-  <main id="main-content-scroll" class="flex-1 h-screen overflow-y-auto smooth-scroll-touch pt-16 md:pt-6 p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-10 scroll-smooth">
+  <main id="main-content-scroll" class="flex-1 w-full md:h-screen md:overflow-y-auto smooth-scroll-touch pt-20 md:pt-6 p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-10 scroll-smooth">
 
     <!-- CLASSIFICA / LEADERBOARD SECTION -->
     <section id="leaderboard-section" class="space-y-3 sm:space-y-4">
