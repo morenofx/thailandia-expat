@@ -2,8 +2,15 @@
 <html lang="it" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Mete Ideali in Thailandia: Confronto & Classifica per Trasferimento</title>
+  <!-- Favicon & Web App Icon (SVG con bandiera thai, palma e badge moderno) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230b1120'/%3E%3Cstop offset='100%25' stop-color='%23164e63'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='url(%23bg)' stroke='%2306b6d4' stroke-width='3'/%3E%3Ccircle cx='50' cy='50' r='38' fill='%230f172a' stroke='%2338bdf8' stroke-width='1.5'/%3E%3Cg transform='translate(20, 24) scale(0.6)'%3E%3Crect width='100' height='17' fill='%23A51931' rx='3'/%3E%3Crect y='17' width='100' height='17' fill='%23F4F5F8'/%3E%3Crect y='34' width='100' height='32' fill='%232D2A4A'/%3E%3Crect y='66' width='100' height='17' fill='%23F4F5F8'/%3E%3Crect y='83' width='100' height='17' fill='%23A51931' rx='3'/%3E%3C/g%3E%3Ctext x='50' y='82' font-family='sans-serif' font-size='30' text-anchor='middle'%3E🌴%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230b1120'/%3E%3Cstop offset='100%25' stop-color='%23164e63'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='url(%23bg)' stroke='%2306b6d4' stroke-width='3'/%3E%3Ccircle cx='50' cy='50' r='38' fill='%230f172a' stroke='%2338bdf8' stroke-width='1.5'/%3E%3Cg transform='translate(20, 24) scale(0.6)'%3E%3Crect width='100' height='17' fill='%23A51931' rx='3'/%3E%3Crect y='17' width='100' height='17' fill='%23F4F5F8'/%3E%3Crect y='34' width='100' height='32' fill='%232D2A4A'/%3E%3Crect y='66' width='100' height='17' fill='%23F4F5F8'/%3E%3Crect y='83' width='100' height='17' fill='%23A51931' rx='3'/%3E%3C/g%3E%3Ctext x='50' y='82' font-family='sans-serif' font-size='30' text-anchor='middle'%3E🌴%3C/text%3E%3C/svg%3E">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Thai Expat">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0b1120">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -58,28 +65,38 @@
       font-size: 0.725rem;
       font-weight: 600;
     }
+    /* iPhone Safe Area support & smooth momentum scroll */
+    .safe-top {
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .smooth-scroll-touch {
+      -webkit-overflow-scrolling: touch;
+    }
   </style>
 </head>
-<body class="bg-darkbg text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white h-screen overflow-hidden flex flex-col md:flex-row">
+<body class="bg-darkbg text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white h-screen overflow-hidden flex flex-col md:flex-row pb-16 md:pb-0">
 
-  <!-- TOP BAR MOBILE (visibile solo su schermi piccoli) -->
-  <header class="md:hidden bg-slate-900 border-b border-bordercol px-4 py-3 flex items-center justify-between shrink-0 z-50">
+  <!-- TOP BAR MOBILE (iPhone Friendly con Safe Area) -->
+  <header class="md:hidden bg-slate-900/95 backdrop-blur-md border-b border-bordercol px-3.5 py-2.5 safe-top flex items-center justify-between shrink-0 z-50 shadow-md">
     <div class="flex items-center gap-2">
       <span class="text-2xl">🇹🇭</span>
       <div>
-        <h1 class="text-sm font-black bg-gradient-to-r from-cyan-400 via-teal-300 to-amber-300 bg-clip-text text-transparent">Thailandia Expat</h1>
-        <p class="text-[9px] text-slate-400 leading-none">Guida 60enni & Mete</p>
+        <h1 class="text-sm font-black bg-gradient-to-r from-cyan-400 via-teal-300 to-amber-300 bg-clip-text text-transparent leading-none">Thai Expat</h1>
+        <p class="text-[9px] text-slate-400 mt-0.5 font-medium">Guida 60enni & Mete</p>
       </div>
     </div>
-    <div class="flex items-center gap-2">
-      <button onclick="refreshData()" title="Aggiorna e ricalcola classifica" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition">
-        <span id="mobile-refresh-icon">🔄</span> <span class="hidden sm:inline">Aggiorna</span>
+    <div class="flex items-center gap-1.5">
+      <button onclick="refreshData()" title="Ricalcola" class="p-2 bg-slate-800 text-cyan-300 border border-slate-700 rounded-xl text-xs font-bold active:scale-90 transition">
+        <span id="mobile-refresh-icon">🔄</span>
       </button>
-      <button onclick="openNewCityModal()" class="px-2.5 py-1.5 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm">
-        <span>✨</span> <span>+ Aggiungi</span>
+      <button onclick="openNewCityModal()" class="px-2.5 py-1.5 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition">
+        <span>✨</span> <span>+ Città</span>
       </button>
-      <button onclick="toggleMobileSidebar()" class="p-2 bg-slate-800 rounded-lg text-slate-300 border border-slate-700 focus:outline-none">
-        <span class="text-base">☰</span>
+      <button onclick="toggleMobileSidebar()" class="p-2 bg-slate-800 rounded-xl text-slate-300 border border-slate-700 active:scale-90 transition">
+        <span class="text-sm">☰ Pesi</span>
       </button>
     </div>
   </header>
@@ -231,23 +248,48 @@
   </aside>
 
   <!-- CONTENUTO PRINCIPALE A DESTRA A SCORRIMENTO INDIPENDENTE -->
-  <main id="main-content-scroll" class="flex-1 h-screen overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-10 scroll-smooth">
+  <main id="main-content-scroll" class="flex-1 h-screen overflow-y-auto smooth-scroll-touch p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-10 scroll-smooth">
 
     <!-- CLASSIFICA / LEADERBOARD SECTION -->
-    <section id="leaderboard-section" class="space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <section id="leaderboard-section" class="space-y-3 sm:space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Classifica Dinamica Allineata</span>
-          <h2 class="text-xl sm:text-2xl font-black text-white">Graduatoria Mete in Ordine di Idoneità</h2>
-          <p class="text-xs text-slate-400 mt-0.5">Clicca su ciascun bottone della colonna per ordinarla al momento</p>
+          <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-amber-400">Classifica Dinamica</span>
+          <h2 class="text-lg sm:text-2xl font-black text-white">Graduatoria Mete Consigliate</h2>
+          <p class="text-[11px] sm:text-xs text-slate-400">Ordinamento in base alle tue priorità</p>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="badge-pill bg-cyan-950 text-cyan-300 border border-cyan-700 text-xs">Tabella Rigida a Colonne Fisse</span>
+        <div class="hidden sm:flex items-center gap-2">
+          <span class="badge-pill bg-cyan-950 text-cyan-300 border border-cyan-700 text-xs">Tabella Rigida Desktop</span>
         </div>
       </div>
 
-      <!-- Table Container with strict table-fixed layout and sticky styled header cells -->
-      <div class="overflow-x-auto rounded-xl border border-bordercol bg-cardbg shadow-xl block">
+      <!-- Quick Sort Filter Chips per Mobile (Scrollabile orizzontalmente con il pollice) -->
+      <div class="md:hidden flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none text-[11px] font-semibold -mx-1 px-1">
+        <span class="text-[10px] text-slate-400 font-bold uppercase shrink-0">Filtra:</span>
+        <button onclick="changeSort('score')" id="mob-sort-score" class="shrink-0 px-2.5 py-1 rounded-lg bg-cyan-600 text-white border border-cyan-400/40">
+          ★ Score
+        </button>
+        <button onclick="changeSort('nightlife')" id="mob-sort-nightlife" class="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800 text-purple-300 border border-slate-700">
+          🍸 Movida
+        </button>
+        <button onclick="changeSort('dating')" id="mob-sort-dating" class="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800 text-pink-300 border border-slate-700">
+          💍 Moglie
+        </button>
+        <button onclick="changeSort('cost')" id="mob-sort-cost" class="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800 text-emerald-300 border border-slate-700">
+          💰 Costo
+        </button>
+        <button onclick="changeSort('services')" id="mob-sort-services" class="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800 text-cyan-300 border border-slate-700">
+          🏥 Sanità
+        </button>
+      </div>
+
+      <!-- VISTA 1: Mobile Cards Stream (Ottimizzata per iPhone e schermi piccoli, niente scroll orizzontale scomodo) -->
+      <div id="leaderboard-mobile-list" class="md:hidden space-y-2.5">
+        <!-- Generato via JS -->
+      </div>
+
+      <!-- VISTA 2: Table Container Desktop (Visibile solo da schermi medi/grandi in su) -->
+      <div class="hidden md:block overflow-x-auto rounded-xl border border-bordercol bg-cardbg shadow-xl">
         <table class="w-full table-fixed text-left text-xs sm:text-sm border-collapse min-w-[920px]">
           <colgroup>
             <col class="w-[50px]">               <!-- Posizione -->
@@ -390,6 +432,30 @@
     </section>
 
   </main>
+
+  <!-- BOTTOM BAR FISSA PER IPHONE / SMARTPHONE (Navigazione ad una mano) -->
+  <div class="md:hidden fixed bottom-0 inset-x-0 bg-slate-950/95 backdrop-blur-md border-t border-bordercol py-1.5 px-3 z-40 safe-bottom flex items-center justify-around text-[10px] font-semibold text-slate-400 shadow-2xl">
+    <button onclick="scrollToSection('leaderboard-section')" class="flex flex-col items-center py-1 px-2 text-cyan-400 hover:text-white transition active:scale-95">
+      <span class="text-base leading-none">🏆</span>
+      <span class="mt-0.5">Classifica</span>
+    </button>
+    <button onclick="scrollToSection('cards-section')" class="flex flex-col items-center py-1 px-2 hover:text-white transition active:scale-95">
+      <span class="text-base leading-none">🏙️</span>
+      <span class="mt-0.5">Mete</span>
+    </button>
+    <button onclick="scrollToSection('radar-section')" class="flex flex-col items-center py-1 px-2 hover:text-white transition active:scale-95">
+      <span class="text-base leading-none">📊</span>
+      <span class="mt-0.5">Grafici</span>
+    </button>
+    <button onclick="scrollToSection('guide-section')" class="flex flex-col items-center py-1 px-2 hover:text-white transition active:scale-95">
+      <span class="text-base leading-none">💍</span>
+      <span class="mt-0.5">Guida 60</span>
+    </button>
+    <button onclick="toggleMobileSidebar()" class="flex flex-col items-center py-1 px-2 hover:text-white transition active:scale-95">
+      <span class="text-base leading-none">⚙️</span>
+      <span class="mt-0.5">Pesi</span>
+    </button>
+  </div>
 
   <!-- MODALE AGGIUNGI NUOVA LOCALITÀ (VIA GEMINI API) -->
   <div id="add-city-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
@@ -1146,24 +1212,40 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
 
       const buttons = ['score', 'nightlife', 'dating', 'cost', 'services'];
       buttons.forEach(key => {
+        // Desktop th buttons
         const btn = document.getElementById(`th-btn-${key}`);
         const indicator = document.getElementById(`th-sort-${key}`);
-        if (!btn || !indicator) return;
+        if (btn && indicator) {
+          if (key === sortKey) {
+            btn.className = "w-full py-1.5 px-2 rounded-lg font-bold bg-cyan-600 text-white flex items-center justify-center gap-1 transition shadow-sm border border-cyan-400/40";
+            indicator.textContent = '▼';
+            indicator.className = 'text-xs text-white';
+          } else {
+            let textCol = 'text-slate-300';
+            if (key === 'nightlife') textCol = 'text-purple-300';
+            if (key === 'dating') textCol = 'text-pink-300';
+            if (key === 'cost') textCol = 'text-emerald-300';
+            if (key === 'services') textCol = 'text-cyan-300';
 
-        if (key === sortKey) {
-          btn.className = "w-full py-1.5 px-2 rounded-lg font-bold bg-cyan-600 text-white flex items-center justify-center gap-1 transition shadow-sm border border-cyan-400/40";
-          indicator.textContent = '▼';
-          indicator.className = 'text-xs text-white';
-        } else {
-          let textCol = 'text-slate-300';
-          if (key === 'nightlife') textCol = 'text-purple-300';
-          if (key === 'dating') textCol = 'text-pink-300';
-          if (key === 'cost') textCol = 'text-emerald-300';
-          if (key === 'services') textCol = 'text-cyan-300';
+            btn.className = `w-full py-1.5 px-1.5 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 ${textCol} flex items-center justify-center gap-1 transition border border-slate-700`;
+            indicator.textContent = '↕';
+            indicator.className = 'text-[10px] text-slate-500';
+          }
+        }
 
-          btn.className = `w-full py-1.5 px-1.5 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 ${textCol} flex items-center justify-center gap-1 transition border border-slate-700`;
-          indicator.textContent = '↕';
-          indicator.className = 'text-[10px] text-slate-500';
+        // Mobile pill buttons
+        const mobBtn = document.getElementById(`mob-sort-${key}`);
+        if (mobBtn) {
+          if (key === sortKey) {
+            mobBtn.className = "shrink-0 px-2.5 py-1 rounded-lg bg-cyan-600 text-white border border-cyan-400/40 font-bold shadow-sm";
+          } else {
+            let textCol = 'text-slate-300';
+            if (key === 'nightlife') textCol = 'text-purple-300';
+            if (key === 'dating') textCol = 'text-pink-300';
+            if (key === 'cost') textCol = 'text-emerald-300';
+            if (key === 'services') textCol = 'text-cyan-300';
+            mobBtn.className = `shrink-0 px-2.5 py-1 rounded-lg bg-slate-800 ${textCol} border border-slate-700 font-semibold`;
+          }
         }
       });
 
@@ -1202,93 +1284,163 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
     }
 
     function renderLeaderboard() {
+      // 1. Popola versione Mobile (Card Stream ottimizzato per iPhone)
+      const mobileContainer = document.getElementById('leaderboard-mobile-list');
       const tbody = document.getElementById('leaderboard-body');
-      tbody.innerHTML = '';
+      
       const sorted = getSortedDestinations();
 
-      if (sorted.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">Nessuna destinazione corrisponde alla ricerca.</td></tr>`;
-        return;
-      }
+      if (mobileContainer) {
+        mobileContainer.innerHTML = '';
+        if (sorted.length === 0) {
+          mobileContainer.innerHTML = `<div class="py-6 text-center text-xs text-slate-400 bg-cardbg rounded-xl border border-bordercol">Nessuna destinazione corrisponde alla ricerca.</div>`;
+        } else {
+          sorted.forEach((item, index) => {
+            const score = calculateScore(item);
+            const rankMedal = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `#${index + 1}`));
+            const mobCard = document.createElement('div');
+            mobCard.className = "bg-cardbg border border-bordercol/80 rounded-xl p-3.5 shadow-md active:bg-slate-800/80 transition cursor-pointer";
+            mobCard.onclick = () => openModal(item.id);
 
-      sorted.forEach((item, index) => {
-        const score = calculateScore(item);
-        const rankMedal = index === 0 ? '🥇 1' : (index === 1 ? '🥈 2' : (index === 2 ? '🥉 3' : `${index + 1}`));
-        const row = document.createElement('tr');
-        row.className = "hover:bg-slate-800/60 transition cursor-pointer group border-b border-bordercol/40";
-        row.onclick = () => openModal(item.id);
+            mobCard.innerHTML = `
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-base font-bold text-amber-300 w-6 text-center font-mono">${rankMedal}</span>
+                  <div>
+                    <h4 class="font-black text-sm text-white leading-tight flex items-center gap-1.5">
+                      ${item.name}
+                    </h4>
+                    <span class="text-[10px] text-slate-400">${item.zone}</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-black bg-cyan-950 text-cyan-300 border border-cyan-700/60 font-mono">
+                    ★ ${score}
+                  </span>
+                </div>
+              </div>
 
-        row.innerHTML = `
-          <!-- 1. Posizione -->
-          <td class="py-3.5 px-2 text-center font-bold text-sm ${index < 3 ? 'text-amber-300' : 'text-slate-400'}">
-            ${rankMedal}
-          </td>
-
-          <!-- 2. Città e Contesto -->
-          <td class="py-3.5 px-4">
-            <div class="flex flex-col items-start gap-1">
-              <span class="font-bold text-sm text-white group-hover:text-cyan-300 transition tracking-wide leading-tight">
-                ${item.name}
-              </span>
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="badge-pill ${item.badgeColor} text-[10px] py-0.5 px-2 leading-tight">
+              <div class="flex items-center gap-1.5 mb-2.5 flex-wrap">
+                <span class="badge-pill ${item.badgeColor} text-[10px] py-0 px-2 leading-none">
                   ${item.badge}
                 </span>
-                <span class="text-[11px] text-slate-400">${item.zone}</span>
+                <span class="text-[11px] font-mono font-semibold text-slate-300 ml-auto">
+                  ${item.budgetEurMin}€ – ${item.budgetEurMax}€ <span class="text-[9px] text-slate-400">/mese</span>
+                </span>
               </div>
-            </div>
-          </td>
 
-          <!-- 3. Score Globale -->
-          <td class="py-3.5 px-2 text-center">
-            <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-black bg-cyan-950/80 text-cyan-300 border border-cyan-700/60 font-mono shadow-sm">
-              ${score} / 10
-            </span>
-          </td>
+              <!-- Compact Metric Pills for iPhone -->
+              <div class="grid grid-cols-4 gap-1.5 text-center text-[10px] bg-slate-900/80 p-2 rounded-lg border border-slate-800/80">
+                <div>
+                  <span class="text-purple-300 block text-[9px] font-medium">🍸 Notte</span>
+                  <span class="font-bold font-mono text-slate-200 text-xs">${item.nightlife.toFixed(1)}</span>
+                </div>
+                <div>
+                  <span class="text-pink-300 block text-[9px] font-medium">💍 Moglie</span>
+                  <span class="font-bold font-mono text-slate-200 text-xs">${item.dating.toFixed(1)}</span>
+                </div>
+                <div>
+                  <span class="text-emerald-300 block text-[9px] font-medium">💰 Costo</span>
+                  <span class="font-bold font-mono text-slate-200 text-xs">${item.cost.toFixed(1)}</span>
+                </div>
+                <div>
+                  <span class="text-cyan-300 block text-[9px] font-medium">🏥 Sanità</span>
+                  <span class="font-bold font-mono text-slate-200 text-xs">${item.services.toFixed(1)}</span>
+                </div>
+              </div>
+            `;
+            mobileContainer.appendChild(mobCard);
+          });
+        }
+      }
 
-          <!-- 4. Notturna -->
-          <td class="py-3.5 px-2 text-center">
-            <span class="inline-block font-mono font-bold text-purple-300 text-sm bg-purple-950/40 px-2 py-0.5 rounded border border-purple-900/40">
-              ${item.nightlife.toFixed(1)}
-            </span>
-          </td>
+      // 2. Popola versione Desktop (Tabella fissa allineata)
+      if (tbody) {
+        tbody.innerHTML = '';
+        if (sorted.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">Nessuna destinazione corrisponde alla ricerca.</td></tr>`;
+          return;
+        }
 
-          <!-- 5. Incontri Stabili -->
-          <td class="py-3.5 px-2 text-center">
-            <span class="inline-block font-mono font-bold text-pink-300 text-sm bg-pink-950/40 px-2 py-0.5 rounded border border-pink-900/40">
-              ${item.dating.toFixed(1)}
-            </span>
-          </td>
+        sorted.forEach((item, index) => {
+          const score = calculateScore(item);
+          const rankMedal = index === 0 ? '🥇 1' : (index === 1 ? '🥈 2' : (index === 2 ? '🥉 3' : `${index + 1}`));
+          const row = document.createElement('tr');
+          row.className = "hover:bg-slate-800/60 transition cursor-pointer group border-b border-bordercol/40";
+          row.onclick = () => openModal(item.id);
 
-          <!-- 6. Convenienza Costo -->
-          <td class="py-3.5 px-2 text-center">
-            <span class="inline-block font-mono font-bold text-emerald-300 text-sm bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/40">
-              ${item.cost.toFixed(1)}
-            </span>
-          </td>
+          row.innerHTML = `
+            <!-- 1. Posizione -->
+            <td class="py-3.5 px-2 text-center font-bold text-sm ${index < 3 ? 'text-amber-300' : 'text-slate-400'}">
+              ${rankMedal}
+            </td>
 
-          <!-- 7. Sanità & Servizi -->
-          <td class="py-3.5 px-2 text-center">
-            <span class="inline-block font-mono font-bold text-cyan-300 text-sm bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-900/40">
-              ${item.services.toFixed(1)}
-            </span>
-          </td>
+            <!-- 2. Città e Contesto -->
+            <td class="py-3.5 px-4">
+              <div class="flex flex-col items-start gap-1">
+                <span class="font-bold text-sm text-white group-hover:text-cyan-300 transition tracking-wide leading-tight">
+                  ${item.name}
+                </span>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="badge-pill ${item.badgeColor} text-[10px] py-0.5 px-2 leading-tight">
+                    ${item.badge}
+                  </span>
+                  <span class="text-[11px] text-slate-400">${item.zone}</span>
+                </div>
+              </div>
+            </td>
 
-          <!-- 8. Budget Mensile (€ e THB) -->
-          <td class="py-3.5 px-3 text-right">
-            <div class="font-mono font-bold text-slate-100 text-xs">${item.budgetEurMin}€ – ${item.budgetEurMax}€</div>
-            <div class="text-[10px] text-slate-400 font-mono">${item.budgetThb} ฿</div>
-          </td>
+            <!-- 3. Score Globale -->
+            <td class="py-3.5 px-2 text-center">
+              <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-black bg-cyan-950/80 text-cyan-300 border border-cyan-700/60 font-mono shadow-sm">
+                ${score} / 10
+              </span>
+            </td>
 
-          <!-- 9. Azione Dettagli -->
-          <td class="py-3.5 px-3 text-center">
-            <button class="px-2.5 py-1 text-xs bg-slate-800 group-hover:bg-cyan-600 group-hover:text-white rounded border border-bordercol text-slate-300 transition font-semibold" onclick="event.stopPropagation(); openModal('${item.id}')">
-              Apri ➔
-            </button>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
+            <!-- 4. Notturna -->
+            <td class="py-3.5 px-2 text-center">
+              <span class="inline-block font-mono font-bold text-purple-300 text-sm bg-purple-950/40 px-2 py-0.5 rounded border border-purple-900/40">
+                ${item.nightlife.toFixed(1)}
+              </span>
+            </td>
+
+            <!-- 5. Incontri Stabili -->
+            <td class="py-3.5 px-2 text-center">
+              <span class="inline-block font-mono font-bold text-pink-300 text-sm bg-pink-950/40 px-2 py-0.5 rounded border border-pink-900/40">
+                ${item.dating.toFixed(1)}
+              </span>
+            </td>
+
+            <!-- 6. Convenienza Costo -->
+            <td class="py-3.5 px-2 text-center">
+              <span class="inline-block font-mono font-bold text-emerald-300 text-sm bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/40">
+                ${item.cost.toFixed(1)}
+              </span>
+            </td>
+
+            <!-- 7. Sanità & Servizi -->
+            <td class="py-3.5 px-2 text-center">
+              <span class="inline-block font-mono font-bold text-cyan-300 text-sm bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-900/40">
+                ${item.services.toFixed(1)}
+              </span>
+            </td>
+
+            <!-- 8. Budget Mensile (€ e THB) -->
+            <td class="py-3.5 px-3 text-right">
+              <div class="font-mono font-bold text-slate-100 text-xs">${item.budgetEurMin}€ – ${item.budgetEurMax}€</div>
+              <div class="text-[10px] text-slate-400 font-mono">${item.budgetThb} ฿</div>
+            </td>
+
+            <!-- 9. Azione Dettagli -->
+            <td class="py-3.5 px-3 text-center">
+              <button class="px-2.5 py-1 text-xs bg-slate-800 group-hover:bg-cyan-600 group-hover:text-white rounded border border-bordercol text-slate-300 transition font-semibold" onclick="event.stopPropagation(); openModal('${item.id}')">
+                Apri ➔
+              </button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
     }
 
     // Render City Cards
