@@ -83,26 +83,43 @@
       top: 0 !important;
       left: 0 !important;
       right: 0 !important;
-      width: 100vw !important;
+      width: 100% !important;
       transform: translateZ(0); /* Forza accelerazione hardware GPU */
       -webkit-transform: translateZ(0);
       will-change: transform;
       z-index: 9999 !important;
     }
 
-    /* Rende sticky l'header della tabella sia orizzontalmente che verticalmente su mobile/desktop */
+    /* Regola iOS Safari per sticky header stabile sia su mobile che desktop */
+    .sticky-ios-header {
+      position: -webkit-sticky !important;
+      position: sticky !important;
+      top: 56px !important; /* Subito sotto l'header mobile fisso */
+      z-index: 40 !important;
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+      background-color: #0b1120 !important;
+    }
+
+    /* Tabella sticky su iOS Safari: thead e th devono avere -webkit-sticky esplicito */
     .table-container-sticky {
       position: relative;
-      max-height: 75vh;
-      overflow-y: auto;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
-    .table-container-sticky thead th {
-      position: sticky;
-      top: 0;
-      z-index: 25;
-      background-color: #0f172a;
+    .table-container-sticky table thead {
+      position: -webkit-sticky !important;
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 35 !important;
+    }
+    .table-container-sticky table thead th {
+      position: -webkit-sticky !important;
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 35 !important;
+      background-color: #0f172a !important;
+      -webkit-backface-visibility: hidden;
     }
   </style>
 </head>
@@ -292,17 +309,17 @@
         </div>
       </div>
 
-      <!-- Quick Sort Filter Chips per Mobile (Resa Sticky in cima su mobile) -->
-      <div id="mob-sort-bar" class="md:hidden sticky top-12 z-20 bg-darkbg/95 backdrop-blur-md py-2 -mx-3 px-3 border-b border-bordercol/60 flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[11px] font-semibold">
-        <span class="text-[10px] text-slate-400 font-bold uppercase shrink-0">Filtra:</span>
+      <!-- Quick Sort Filter Chips per Mobile (Resa Sticky in cima su iOS con -webkit-sticky) -->
+      <div id="mob-sort-bar" class="md:hidden sticky-ios-header backdrop-blur-md py-2.5 -mx-3 px-3.5 border-b border-bordercol/80 flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[11px] font-semibold shadow-lg">
+        <span class="text-[10px] text-slate-400 font-bold uppercase shrink-0">Ordina:</span>
         <button onclick="changeSort('score')" id="mob-sort-score" class="shrink-0 px-2.5 py-1 rounded-lg bg-cyan-600 text-white border border-cyan-400/40">
           ★ Score
         </button>
         <button onclick="changeSort('nightlife')" id="mob-sort-nightlife" class="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800 text-purple-300 border border-slate-700">
-          🍸 Movida
+          🍸 Notturna
         </button>
         <button onclick="changeSort('dating')" id="mob-sort-dating" class="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800 text-pink-300 border border-slate-700">
-          💍 Moglie
+          💍 Relazioni
         </button>
         <button onclick="changeSort('cost')" id="mob-sort-cost" class="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800 text-emerald-300 border border-slate-700">
           💰 Costo
@@ -317,7 +334,7 @@
         <!-- Generato via JS -->
       </div>
 
-      <!-- VISTA 2: Table Container Desktop & Schermi Orizzontali (Con thead bloccato e sticky top fisso) -->
+      <!-- VISTA 2: Table Container Desktop & Schermi Orizzontali (Con thead e th bloccati con -webkit-sticky per iOS Safari) -->
       <div class="hidden md:block rounded-xl border border-bordercol bg-cardbg shadow-xl table-container-sticky">
         <table class="w-full table-fixed text-left text-xs sm:text-sm border-collapse min-w-[920px]">
           <colgroup>
@@ -331,7 +348,7 @@
             <col class="w-[125px]">              <!-- Budget Stimato -->
             <col class="w-[85px]">               <!-- Scheda -->
           </colgroup>
-          <thead class="sticky top-0 z-30 bg-slate-900 shadow-md text-slate-200 text-xs font-semibold select-none border-b-2 border-bordercol">
+          <thead class="bg-slate-900 shadow-md text-slate-200 text-xs font-semibold select-none border-b-2 border-bordercol">
             <tr>
               <th scope="col" class="py-3 px-2 text-center text-slate-400 font-bold bg-slate-900">
                 #
