@@ -73,7 +73,7 @@
     /* !important: Tailwind (py-2.5) viene caricato dopo e azzerava lo spazio per orologio e tacca
        nell'app aperta dalla schermata Home */
     .safe-top {
-      padding-top: max(10px, calc(env(safe-area-inset-top, 0px) + 6px)) !important;
+      padding-top: max(12px, calc(env(safe-area-inset-top, 0px) + 14px)) !important;
     }
     .safe-bottom {
       padding-bottom: max(8px, env(safe-area-inset-bottom, 8px)) !important;
@@ -129,21 +129,22 @@
     .side-nav-btn.is-active { background: rgba(8, 145, 178, 0.25); color: #67e8f9; border-color: rgba(34, 211, 238, 0.5); }
     /* finestre (scheda citta', backup, + Citta'): mai sotto la tacca o la barra Home */
     .modal-overlay {
-      padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 28px) !important;
       padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
     }
-    .modal-box { max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px) !important; }
+    .modal-box { max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 44px) !important; }
     .modal-close-bar { position: sticky; top: 0; z-index: 1100; display: flex; justify-content: flex-end; height: 0; }
     .modal-close-bar button { transform: translate(8px, -8px); }
     .leaflet-container { isolation: isolate; }
+    #mete-map-wrap { isolation: isolate; } /* i tasti della mappa non passano sopra le schede */
     /* mappa a schermo intero */
     #mete-map-wrap.map-full {
       position: fixed; inset: 0; z-index: 60; border-radius: 0; border: 0; margin: 0 !important;
       display: flex; flex-direction: column; background: #0b1120;
     }
     #mete-map-wrap.map-full #mete-map { flex: 1 1 auto; height: auto !important; }
-    #mete-map-wrap.map-full #map-full-btn { top: calc(env(safe-area-inset-top, 0px) + 10px); }
-    #mete-map-wrap.map-full .leaflet-top { top: env(safe-area-inset-top, 0px); }
+    #mete-map-wrap.map-full #map-full-btn { display: none; } /* si chiude dal tasto grande in basso */
+    #mete-map-wrap.map-full .leaflet-top { top: calc(env(safe-area-inset-top, 0px) + 24px); }
     #mete-map-wrap.map-full .map-close-bottom { display: block; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); }
     #mete-map-wrap.map-full .map-foot { padding-bottom: 8px !important; }
     .leaflet-container { background: #aad3df; font-family: inherit; }
@@ -1611,9 +1612,10 @@
       if (typeof L === 'undefined' || meteMap) return;
       const el = document.getElementById('mete-map');
       if (!el) return;
-      meteMap = L.map(el, { zoomControl: true, attributionControl: true, zoomSnap: 0.25 })
+      meteMap = L.map(el, { zoomControl: false, attributionControl: true, zoomSnap: 0.25 })
         .setView([13.2, 100.9], 5);
       L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 18 }).addTo(meteMap);
+      L.control.zoom({ position: 'bottomright' }).addTo(meteMap);
       meteMarkers = L.layerGroup().addTo(meteMap);
       updateMeteMap();
       fitMapToAll();
@@ -2090,7 +2092,7 @@
 
     // ===================== AGGIORNA =====================
     // Dalla schermata Home non c'e' il tasto ricarica di Safari: questo scarica l'ultima versione
-    const APP_VERSION = "2026.11.09i";
+    const APP_VERSION = "2026.11.09j";
     // All'apertura (e quando torni sull'app) controlla se online c'e' una versione nuova
     async function checkForUpdate() {
       try {
