@@ -70,11 +70,13 @@
       font-weight: 600;
     }
     /* iPhone Safe Area support & smooth momentum scroll */
+    /* !important: Tailwind (py-2.5) viene caricato dopo e azzerava lo spazio per orologio e tacca
+       nell'app aperta dalla schermata Home */
     .safe-top {
-      padding-top: max(10px, env(safe-area-inset-top, 10px));
+      padding-top: max(10px, calc(env(safe-area-inset-top, 0px) + 6px)) !important;
     }
     .safe-bottom {
-      padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+      padding-bottom: max(8px, env(safe-area-inset-bottom, 8px)) !important;
     }
     .smooth-scroll-touch {
       -webkit-overflow-scrolling: touch;
@@ -2063,7 +2065,7 @@
 
     // ===================== AGGIORNA =====================
     // Dalla schermata Home non c'e' il tasto ricarica di Safari: questo scarica l'ultima versione
-    const APP_VERSION = "2026.11.09f";
+    const APP_VERSION = "2026.11.09g";
     // All'apertura (e quando torni sull'app) controlla se online c'e' una versione nuova
     async function checkForUpdate() {
       try {
