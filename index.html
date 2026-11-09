@@ -676,15 +676,15 @@
   <!-- MODALE BACKUP / TRASFERISCI SU NUOVO TELEFONO -->
   <div id="backup-modal" class="modal-overlay fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="modal-box bg-cardbg border border-bordercol rounded-2xl max-w-md w-full overflow-y-auto p-5 sm:p-6 relative shadow-2xl space-y-4">
-      <button onclick="closeBackupModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full leading-none">
-        ✕
-      </button>
+      <div class="modal-close-bar">
+        <button onclick="closeBackupModal()" aria-label="Chiudi" class="w-11 h-11 flex items-center justify-center rounded-full bg-slate-800/95 border border-slate-600 text-white text-lg shadow-lg active:scale-90 transition">✕</button>
+      </div>
 
       <div class="flex items-center gap-2">
         <span class="text-2xl">💾</span>
         <div>
-          <h3 class="text-base font-black text-white">Salva & Trasferisci Città</h3>
-          <p class="text-[11px] text-slate-400">Mantieni i tuoi dati se cambi telefono o usi un altro browser</p>
+          <h3 class="text-base font-black text-white pr-12">Salva & Trasferisci</h3>
+          <p class="text-[11px] text-slate-400">Mete, pesi e pensione in un file: per cambiare telefono o indirizzo</p>
         </div>
       </div>
 
@@ -694,10 +694,15 @@
           <div class="font-bold text-cyan-300 flex items-center gap-1.5">
             <span>📥</span> 1. Esporta le tue mete personali
           </div>
-          <p class="text-[11px] text-slate-400">Scarica il file con tutte le mete salvate. Puoi inviarlo su WhatsApp o salvarlo in Google Drive.</p>
-          <button onclick="exportBackupFile()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold rounded-lg border border-slate-700 transition">
-            Scarica Backup (.json)
+          <p class="text-[11px] text-slate-400">Su iPhone si apre il menu Condividi: scegli <b class="text-slate-200">«Salva su File»</b> (iCloud Drive) oppure WhatsApp / Mail.</p>
+          <label class="flex items-center gap-2 text-[11px] text-slate-300 py-1">
+            <input type="checkbox" id="backup-include-pension" checked class="w-5 h-5 accent-cyan-500">
+            Includi i dati della pensione (restano solo nel file)
+          </label>
+          <button onclick="exportBackupFile()" class="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition">
+            💾 Salva il backup
           </button>
+          <div id="backup-msg" class="hidden text-[11px] rounded-lg p-2"></div>
         </div>
 
         <!-- Opzione 2: Importa file -->
@@ -708,14 +713,12 @@
           <p class="text-[11px] text-slate-400">Seleziona il file scaricato in precedenza per caricare tutte le città sul nuovo dispositivo.</p>
           <label class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold rounded-lg border border-slate-700 transition block text-center cursor-pointer">
             Seleziona File di Backup
-            <input type="file" id="backup-file-input" accept=".json" class="hidden" onchange="importBackupFile(event)">
+            <input type="file" id="backup-file-input" accept=".json,application/json,text/plain" class="hidden" onchange="importBackupFile(event)">
           </label>
         </div>
       </div>
 
-      <div class="pt-2 text-right">
-        <button onclick="closeBackupModal()" class="px-4 py-1.5 text-xs rounded-lg bg-slate-800 text-slate-300">Chiudi</button>
-      </div>
+      <button onclick="closeBackupModal()" class="w-full py-3 rounded-xl bg-slate-800 border border-slate-600 text-white font-bold">✕ Chiudi</button>
     </div>
   </div>
 
@@ -1104,51 +1107,93 @@
     function openBackupModal() {
       closeMobileSidebarIfOpen();
       document.getElementById('backup-modal').classList.remove('hidden');
+      const m = document.getElementById('backup-msg'); if (m) m.className = 'hidden';
     }
 
     function closeBackupModal() {
       document.getElementById('backup-modal').classList.add('hidden');
     }
 
-    function exportBackupFile() {
+    function setBackupMsg(text, ok) {
+      const el = document.getElementById('backup-msg');
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'text-[11px] rounded-lg p-2 ' + (ok ? 'bg-emerald-900/40 text-emerald-200 border border-emerald-800' : 'bg-rose-900/40 text-rose-200 border border-rose-800');
+    }
+
+    // iPhone: un link data: con "download" non fa nulla (soprattutto dalla Home).
+    // Si passa un vero file al menu Condividi; sul computer si scarica con un Blob.
+    async function exportBackupFile() {
+      const withPension = document.getElementById('backup-include-pension')?.checked;
+      const payload = {
+        app: 'thai-expat',
+        formato: 2,
+        creato: new Date().toISOString(),
+        versioneApp: APP_VERSION,
+        destinations: destinations,
+        pensione: withPension ? loadPensionData() : null
+      };
+      const name = `thai_expat_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      const json = JSON.stringify(payload, null, 2);
+      let file;
+      try { file = new File([json], name, { type: 'application/json' }); } catch (e) { file = null; }
+
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'Backup Thai Expat' });
+          setBackupMsg('Backup pronto: se hai scelto «Salva su File» lo trovi in iCloud Drive.', true);
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') { setBackupMsg('Salvataggio annullato.', false); return; }
+          console.warn('Condividi non riuscito, provo lo scaricamento:', err);
+        }
+      }
       try {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(destinations, null, 2));
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `thailandia_expat_backup_${new Date().toISOString().slice(0, 10)}.json`);
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
+        const url = URL.createObjectURL(file || new Blob([json], { type: 'application/json' }));
+        const a = document.createElement('a');
+        a.href = url; a.download = name;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        setBackupMsg(`File «${name}» scaricato.`, true);
       } catch (err) {
-        console.error("Errore esportazione backup:", err);
+        console.error('Errore esportazione backup:', err);
+        setBackupMsg('Non riesco a creare il file su questo browser.', false);
       }
     }
 
     function importBackupFile(event) {
       const file = event.target.files[0];
+      event.target.value = '';
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
           const imported = JSON.parse(e.target.result);
-          if (Array.isArray(imported) && imported.length > 0) {
-            destinations.length = 0;
-            imported.forEach(item => destinations.push(item));
-            saveDestinations();
+          // formato vecchio = solo la lista delle mete; nuovo = oggetto con mete + pensione
+          const list = Array.isArray(imported) ? imported : imported && imported.destinations;
+          const pension = !Array.isArray(imported) && imported ? imported.pensione : null;
+          if (!Array.isArray(list) || list.length === 0) { alert("Questo file non è un backup di Thai Expat."); return; }
 
-            document.getElementById('nav-count-badge').textContent = `${destinations.length} mete`;
-            renderLeaderboard();
-            renderCards();
-            renderRadarButtons();
-            updateRadarChart();
-            updateCostBarChart();
-
-            closeBackupModal();
-            alert("Backup ripristinato con successo! Tutte le tue mete sono state caricate.");
-          } else {
-            alert("Formato file non valido.");
+          destinations.length = 0;
+          list.forEach(item => destinations.push(item));
+          saveDestinations();
+          let pensionMsg = '';
+          if (pension && typeof pension === 'object') {
+            savePensionData(pension);
+            try { renderPension(); } catch (e2) {}
+            pensionMsg = ' e i dati della pensione';
           }
+
+          document.getElementById('nav-count-badge').textContent = `${destinations.length} mete`;
+          renderLeaderboard();
+          renderCards();
+          renderRadarButtons();
+          updateRadarChart();
+          updateCostBarChart();
+
+          closeBackupModal();
+          alert(`Backup ripristinato: ${destinations.length} mete${pensionMsg}.`);
         } catch (err) {
           alert("Errore durante la lettura del file di backup.");
         }
@@ -2092,7 +2137,7 @@
 
     // ===================== AGGIORNA =====================
     // Dalla schermata Home non c'e' il tasto ricarica di Safari: questo scarica l'ultima versione
-    const APP_VERSION = "2026.11.09j";
+    const APP_VERSION = "2026.11.09k";
     // All'apertura (e quando torni sull'app) controlla se online c'e' una versione nuova
     async function checkForUpdate() {
       try {
