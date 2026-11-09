@@ -1226,7 +1226,10 @@
         setTimeout(() => openModal(newCity.id), 400);
 
       } catch (err) {
-        errorBox.textContent = `Impossibile completare l'autocompilazione: ${err.message}. Riprova tra poco.`;
+        const msg = /failed to fetch|load failed|networkerror/i.test(err.message)
+          ? "non riesco a raggiungere il server AI (sei collegato a internet?)"
+          : err.message;
+        errorBox.textContent = `Non sono riuscito ad aggiungere la città: ${msg}.`;
         errorBox.classList.remove('hidden');
       } finally {
         loader.classList.add('hidden');
@@ -2054,7 +2057,7 @@
 
     // ===================== AGGIORNA =====================
     // Dalla schermata Home non c'e' il tasto ricarica di Safari: questo scarica l'ultima versione
-    const APP_VERSION = "2026.11.09d";
+    const APP_VERSION = "2026.11.09e";
     // All'apertura (e quando torni sull'app) controlla se online c'e' una versione nuova
     async function checkForUpdate() {
       try {

@@ -37,16 +37,11 @@ const SCHEMA = {
 };
 SCHEMA.required = SCHEMA.required.concat(["lat", "lng"]);
 
-const ALLOWED_ORIGINS = ["https://morenofx.github.io"];
-
+// Qualsiasi indirizzo (file sul Mac, GitHub Pages, Vercel): a proteggere la chiave c'e' il PIN
 module.exports = async (req, res) => {
-  const origin = req.headers.origin || "";
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-App-Pin");
-    res.setHeader("Vary", "Origin");
-  }
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-App-Pin");
   if (req.method === "OPTIONS") { res.status(204).end(); return; }
   if (req.method !== "POST") { res.status(405).json({ error: "Metodo non consentito" }); return; }
 
