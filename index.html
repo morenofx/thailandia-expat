@@ -40,6 +40,9 @@
       }
     }
   </script>
+  <!-- Leaflet (mappa) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -106,6 +109,49 @@
       #main-sidebar { padding-bottom: env(safe-area-inset-bottom, 0px); }
     }
 
+    /* ===== Schermate: si vede una sezione alla volta ===== */
+    #main-content-scroll > section { display: none; }
+    body[data-view="classifica"] #leaderboard-section,
+    body[data-view="mete"] #cards-section,
+    body[data-view="classifica"] #guide-section,
+    body[data-view="guida"] #guide-section,
+    body[data-view="pensione"] #pension-section { display: block; }
+    body[data-view="grafici"] #radar-section { display: grid; }
+    /* su desktop "Pesi" e' gia' nella barra a sinistra: mostro la classifica */
+    @media (min-width: 768px) {
+      body[data-view="pesi"] #leaderboard-section { display: block; }
+    }
+    .view-btn.is-active { color: #22d3ee; }
+    .view-btn.is-active .view-dot { opacity: 1; }
+    .view-dot { width: 4px; height: 4px; border-radius: 9999px; background: #22d3ee; opacity: 0; margin-top: 2px; }
+    .side-nav-btn.is-active { background: rgba(8, 145, 178, 0.25); color: #67e8f9; border-color: rgba(34, 211, 238, 0.5); }
+    .leaflet-container { background: #aad3df; font-family: inherit; }
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #151f32; color: #e2e8f0; border: 1px solid #24344d; }
+    .leaflet-popup-content { margin: 10px 12px; font-size: 13px; }
+    .map-pin { width: 30px; height: 30px; border-radius: 9999px; display: flex; align-items: center; justify-content: center;
+      font: 800 11px/1 ui-monospace, monospace; color: #0b1120; border: 2px solid #0b1120; box-shadow: 0 2px 8px rgba(0,0,0,.6); }
+    .clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    @media (max-width: 767px) {
+      /* Pesi: la barra laterale diventa una schermata normale */
+      #main-sidebar {
+        position: static !important;
+        transform: none !important;
+        width: 100% !important;
+        height: auto !important;
+        flex: 1 1 auto;
+        min-height: 0;
+        border-right: 0 !important;
+        box-shadow: none !important;
+        display: none !important;
+      }
+      body[data-view="pesi"] #main-sidebar { display: flex !important; }
+      body[data-view="pesi"] #main-content-scroll { display: none; }
+      #mobile-sidebar-backdrop, .sidebar-only-desktop { display: none !important; }
+      /* scritte minuscole leggibili sul telefono */
+      .text-\[9px\], .text-\[10px\] { font-size: 11px !important; }
+    }
+
     /* Barra "Ordina" che resta in cima mentre scorri la classifica */
     .sticky-ios-header {
       position: -webkit-sticky !important;
@@ -139,7 +185,7 @@
     }
   </style>
 </head>
-<body class="bg-darkbg text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white flex flex-col md:flex-row">
+<body data-view="classifica" class="bg-darkbg text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white flex flex-col md:flex-row">
 
   <!-- TOP BAR MOBILE (INCHIODATA FISSA AL 100% SU IPHONE CON ACCELERAZIONE GPU) -->
   <header id="mobile-fixed-header" class="md:hidden bg-slate-900/95 backdrop-blur-md border-b border-bordercol px-3.5 py-2.5 safe-top flex items-center justify-between shrink-0 shadow-xl">
@@ -151,14 +197,8 @@
       </div>
     </div>
     <div class="flex items-center gap-1.5">
-      <button onclick="refreshData()" title="Ricalcola" class="p-2 bg-slate-800 text-cyan-300 border border-slate-700 rounded-xl text-xs font-bold active:scale-90 transition">
-        <span id="mobile-refresh-icon">🔄</span>
-      </button>
-      <button onclick="openNewCityModal()" class="px-2.5 py-1.5 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition">
+      <button onclick="openNewCityModal()" class="px-3 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition">
         <span>✨</span> <span>+ Città</span>
-      </button>
-      <button onclick="toggleMobileSidebar()" class="p-2 bg-slate-800 rounded-xl text-slate-300 border border-slate-700 active:scale-90 transition">
-        <span class="text-sm">☰ Pesi</span>
       </button>
     </div>
   </header>
@@ -169,8 +209,8 @@
   <!-- SIDEBAR (DRAWER SU CELLULARE, FISSA SU DESKTOP) -->
   <aside id="main-sidebar" class="fixed md:static inset-y-0 left-0 w-80 lg:w-96 bg-slate-900/98 md:bg-slate-900/95 border-r border-bordercol flex flex-col shrink-0 h-full z-50 shadow-2xl transition-transform transform -translate-x-full md:translate-x-0 overflow-y-auto">
     <!-- Brand Header -->
-    <div class="p-4 sm:p-5 border-b border-bordercol/80 bg-slate-950/60 sticky top-0 z-10 backdrop-blur">
-      <div class="flex items-center justify-between">
+    <div class="p-4 sm:p-5 border-b border-bordercol/80 bg-slate-950/60 md:sticky top-0 z-10 backdrop-blur">
+      <div class="sidebar-only-desktop flex items-center justify-between">
         <div class="flex items-center gap-2.5">
           <span class="text-3xl filter drop-shadow">🇹🇭</span>
           <div>
@@ -182,12 +222,12 @@
         </div>
         <div class="flex items-center gap-1">
           <span class="badge-pill bg-cyan-950 text-cyan-300 border border-cyan-700/60 text-[10px] font-mono">1€≈38.5฿</span>
-          <button onclick="toggleMobileSidebar()" class="md:hidden text-slate-400 p-1 hover:text-white">✕</button>
+
         </div>
       </div>
 
       <!-- Pulsanti Azione Principali (Aggiungi con AI & Aggiorna) -->
-      <div class="grid grid-cols-5 gap-2 mt-3">
+      <div class="sidebar-only-desktop grid grid-cols-5 gap-2 mt-3">
         <button onclick="openNewCityModal()" class="col-span-3 py-2 px-3 bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-950/50 border border-cyan-400/40">
           <span class="text-sm">✨</span>
           <span class="truncate">+ Nuova Città (AI)</span>
@@ -199,7 +239,7 @@
       </div>
 
       <!-- Backup / Esporta Dati per Cambio Telefono -->
-      <div class="mt-2.5 pt-2 border-t border-bordercol/60 flex items-center justify-between text-[11px]">
+      <div class="md:mt-2.5 md:pt-2 md:border-t border-bordercol/60 flex items-center justify-between text-[11px]">
         <span class="text-slate-400">Salvataggio Cloud/Dispositivi:</span>
         <button onclick="openBackupModal()" class="text-cyan-300 hover:text-white bg-slate-800/80 px-2 py-1 rounded border border-slate-700 flex items-center gap-1 font-semibold transition">
           <span>💾</span> Backup & Condividi
@@ -207,7 +247,7 @@
       </div>
 
       <!-- Quick Search Bar -->
-      <div class="relative mt-3">
+      <div class="sidebar-only-desktop relative mt-3">
         <input 
           type="text" 
           id="city-search" 
@@ -220,24 +260,24 @@
     </div>
 
     <!-- Navigation Tabs / Sections -->
-    <div class="p-3 border-b border-bordercol/80 bg-slate-900/80">
-      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 block mb-1.5">Navigazione Rapida</span>
-      <nav class="grid grid-cols-2 md:grid-cols-1 gap-1.5 text-xs font-semibold">
-        <button onclick="scrollToSection('leaderboard-section'); closeMobileSidebarIfOpen();" class="w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-900/40 text-slate-200 hover:text-cyan-300 border border-slate-700/60 transition flex items-center justify-between">
+    <div class="sidebar-only-desktop p-3 border-b border-bordercol/80 bg-slate-900/80">
+      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 block mb-1.5">Sezioni</span>
+      <nav class="grid grid-cols-1 gap-1.5 text-xs font-semibold">
+        <button onclick="showView('classifica')" data-view-btn="classifica" class="side-nav-btn w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-900/40 text-slate-200 hover:text-cyan-300 border border-slate-700/60 transition flex items-center justify-between">
           <span class="flex items-center gap-2"><span>🏆</span> Classifica</span>
           <span class="text-[10px] text-slate-500">Allineata</span>
         </button>
-        <button onclick="scrollToSection('cards-section'); closeMobileSidebarIfOpen();" class="w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-900/40 text-slate-200 hover:text-cyan-300 border border-slate-700/60 transition flex items-center justify-between">
+        <button onclick="showView('mete')" data-view-btn="mete" class="side-nav-btn w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-900/40 text-slate-200 hover:text-cyan-300 border border-slate-700/60 transition flex items-center justify-between">
           <span class="flex items-center gap-2"><span>🏙️</span> Schede Mete</span>
           <span id="nav-count-badge" class="text-[10px] text-cyan-400">13 mete</span>
         </button>
-        <button onclick="scrollToSection('radar-section'); closeMobileSidebarIfOpen();" class="w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-900/40 text-slate-200 hover:text-cyan-300 border border-slate-700/60 transition flex items-center justify-between">
+        <button onclick="showView('grafici')" data-view-btn="grafici" class="side-nav-btn w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-900/40 text-slate-200 hover:text-cyan-300 border border-slate-700/60 transition flex items-center justify-between">
           <span class="flex items-center gap-2"><span>📊</span> Grafici</span>
           <span class="text-[10px] text-slate-500">Radar & Costi</span>
         </button>
-        <button onclick="scrollToSection('guide-section'); closeMobileSidebarIfOpen();" class="w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-900/40 text-slate-200 hover:text-cyan-300 border border-slate-700/60 transition flex items-center justify-between">
-          <span class="flex items-center gap-2"><span>💍</span> Guida Over 60</span>
-          <span class="text-[10px] text-pink-400">Consigli</span>
+        <button onclick="showView('pensione')" data-view-btn="pensione" class="side-nav-btn w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-900/40 text-slate-200 hover:text-cyan-300 border border-slate-700/60 transition flex items-center justify-between">
+          <span class="flex items-center gap-2"><span>⏳</span> Pensione</span>
+          <span class="text-[10px] text-amber-300">Contributi</span>
         </button>
       </nav>
     </div>
@@ -319,9 +359,6 @@
           <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-amber-400">Classifica Dinamica</span>
           <h2 class="text-lg sm:text-2xl font-black text-white">Graduatoria Mete Consigliate</h2>
           <p class="text-[11px] sm:text-xs text-slate-400">Ordinamento in base alle tue priorità</p>
-        </div>
-        <div class="hidden sm:flex items-center gap-2">
-          <span class="badge-pill bg-cyan-950 text-cyan-300 border border-cyan-700 text-xs">Tabella Rigida Desktop</span>
         </div>
       </div>
 
@@ -421,14 +458,26 @@
     <section id="cards-section" class="space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Approfondimento Completo</span>
-          <h2 class="text-xl sm:text-2xl font-black text-white">Schede Dettagliate per Ogni Destinazione</h2>
+          <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Tutte le mete</span>
+          <h2 class="text-lg sm:text-2xl font-black text-white">Mete in ordine alfabetico</h2>
+          <p class="text-xs text-slate-400">Tocca una meta per la scheda completa</p>
         </div>
-        <p class="text-xs text-slate-400">Include Jomtien, Sattahip, Isan, Bangkok e le isole</p>
+      </div>
+      <div class="rounded-2xl overflow-hidden border border-bordercol shadow-xl">
+        <div id="mete-map" class="w-full h-[380px] sm:h-[460px]"></div>
+        <div class="bg-slate-950/80 px-3 py-2 text-[11px] text-slate-400 flex items-center justify-between gap-2">
+          <span>Il numero sul pallino è il punteggio. Tocca per la scheda.</span>
+          <button onclick="fitMapToAll()" class="shrink-0 text-cyan-300 font-semibold">Tutta la Thailandia</button>
+        </div>
+      </div>
+      <div class="relative">
+        <input type="search" id="city-search-mete" placeholder="Cerca città o zona (Jomtien, Isan...)" oninput="handleSearch(this.value)"
+          class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 pointer-events-none">🔍</span>
       </div>
 
       <!-- City Cards Grid -->
-      <div id="city-cards-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      <div id="city-cards-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2.5 md:gap-4">
         <!-- Dynamically populated via JS -->
       </div>
     </section>
@@ -466,12 +515,22 @@
       </div>
     </section>
 
+    <!-- PENSIONE: contributi, timer, stima lordo/netto (dati solo sul telefono) -->
+    <section id="pension-section" class="space-y-4">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-400">La mia pensione</span>
+        <h2 class="text-lg sm:text-2xl font-black text-white">Contributi e conto alla rovescia</h2>
+      </div>
+      <input type="file" id="inps-file" accept=".xml,text/xml,application/xml" class="hidden" onchange="importInpsFile(event)">
+      <div id="pension-body"></div>
+    </section>
+
     <!-- STRATEGIC SUMMARY & DATING GUIDE BOX -->
-    <section id="guide-section" class="bg-gradient-to-br from-slate-900 to-cardbg border border-bordercol rounded-2xl p-6 shadow-xl mb-12">
+    <section id="guide-section" class="bg-gradient-to-br from-slate-900 to-cardbg border border-bordercol rounded-2xl p-4 sm:p-6 shadow-xl">
       <h3 class="text-lg font-bold text-amber-300 flex items-center gap-2 mb-3">
-        <span>💡</span> Vademecum per Trasferirsi a 60 Anni: Compagna, Movida e Serenità
+        <span>💡</span> Trasferirsi a 60 anni: consigli pratici
       </h3>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs text-slate-300 leading-relaxed">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5 text-sm sm:text-xs text-slate-300 leading-relaxed">
         <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
           <h4 class="font-bold text-purple-300 text-sm mb-1.5">1. Movida Turistica vs. Relazione Seria</h4>
           <p>
@@ -496,26 +555,31 @@
   </main>
 
   <!-- BOTTOM BAR FISSA PER IPHONE / SMARTPHONE (Navigazione ad una mano) -->
-  <nav id="mobile-bottom-bar" class="md:hidden shrink-0 bg-slate-950/95 backdrop-blur-md border-t border-bordercol py-1.5 px-3 z-40 safe-bottom flex items-center justify-around text-[10px] font-semibold text-slate-400 shadow-2xl">
-    <button onclick="scrollToSection('leaderboard-section')" class="flex flex-col items-center py-1 px-2 text-cyan-400 hover:text-white transition active:scale-95">
-      <span class="text-base leading-none">🏆</span>
-      <span class="mt-0.5">Classifica</span>
+  <nav id="mobile-bottom-bar" class="md:hidden shrink-0 bg-slate-950/95 backdrop-blur-md border-t border-bordercol px-1 z-40 safe-bottom flex items-stretch justify-around shadow-2xl">
+    <button onclick="showView('classifica')" data-view-btn="classifica" class="view-btn flex-1 flex flex-col items-center pt-1.5 pb-0.5 text-slate-400 transition active:scale-95">
+      <span class="text-xl leading-none">🏆</span>
+      <span class="mt-1 text-[11px] font-semibold">Classifica</span>
+      <span class="view-dot"></span>
     </button>
-    <button onclick="scrollToSection('cards-section')" class="flex flex-col items-center py-1 px-2 hover:text-white transition active:scale-95">
-      <span class="text-base leading-none">🏙️</span>
-      <span class="mt-0.5">Mete</span>
+    <button onclick="showView('mete')" data-view-btn="mete" class="view-btn flex-1 flex flex-col items-center pt-1.5 pb-0.5 text-slate-400 transition active:scale-95">
+      <span class="text-xl leading-none">🏙️</span>
+      <span class="mt-1 text-[11px] font-semibold">Mete</span>
+      <span class="view-dot"></span>
     </button>
-    <button onclick="scrollToSection('radar-section')" class="flex flex-col items-center py-1 px-2 hover:text-white transition active:scale-95">
-      <span class="text-base leading-none">📊</span>
-      <span class="mt-0.5">Grafici</span>
+    <button onclick="showView('grafici')" data-view-btn="grafici" class="view-btn flex-1 flex flex-col items-center pt-1.5 pb-0.5 text-slate-400 transition active:scale-95">
+      <span class="text-xl leading-none">📊</span>
+      <span class="mt-1 text-[11px] font-semibold">Grafici</span>
+      <span class="view-dot"></span>
     </button>
-    <button onclick="scrollToSection('guide-section')" class="flex flex-col items-center py-1 px-2 hover:text-white transition active:scale-95">
-      <span class="text-base leading-none">💍</span>
-      <span class="mt-0.5">Guida 60</span>
+    <button onclick="showView('pensione')" data-view-btn="pensione" class="view-btn flex-1 flex flex-col items-center pt-1.5 pb-0.5 text-slate-400 transition active:scale-95">
+      <span class="text-xl leading-none">⏳</span>
+      <span class="mt-1 text-[11px] font-semibold">Pensione</span>
+      <span class="view-dot"></span>
     </button>
-    <button onclick="toggleMobileSidebar()" class="flex flex-col items-center py-1 px-2 hover:text-white transition active:scale-95">
-      <span class="text-base leading-none">⚙️</span>
-      <span class="mt-0.5">Pesi</span>
+    <button onclick="showView('pesi')" data-view-btn="pesi" class="view-btn flex-1 flex flex-col items-center pt-1.5 pb-0.5 text-slate-400 transition active:scale-95">
+      <span class="text-xl leading-none">⚙️</span>
+      <span class="mt-1 text-[11px] font-semibold">Pesi</span>
+      <span class="view-dot"></span>
     </button>
   </nav>
 
@@ -969,6 +1033,7 @@
 
     // Mobile Sidebar Drawer Helpers
     function toggleMobileSidebar() {
+      if (window.innerWidth < 768) { showView('pesi'); return; }
       const sidebar = document.getElementById('main-sidebar');
       const backdrop = document.getElementById('mobile-sidebar-backdrop');
       const isClosed = sidebar.classList.contains('-translate-x-full');
@@ -1124,6 +1189,8 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
               cost: { type: "NUMBER", description: "Voto da 1 a 10 per convenienza economica (10 = super economico)" },
               services: { type: "NUMBER", description: "Voto da 1 a 10 per qualità ospedali e comodità" },
               beachQuality: { type: "NUMBER", description: "Voto da 1 a 10 per mare e spiagge (1 se non c'è il mare)" },
+              lat: { type: "NUMBER", description: "Latitudine del centro della località (gradi decimali)" },
+              lng: { type: "NUMBER", description: "Longitudine del centro della località (gradi decimali)" },
               budgetThb: { type: "STRING", description: "Range mensile in Baht, es. 28.000 - 45.000" },
               budgetEurMin: { type: "INTEGER", description: "Spesa minima mensile in Euro" },
               budgetEurMax: { type: "INTEGER", description: "Spesa confortevole mensile in Euro" },
@@ -1348,6 +1415,10 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
 
     function handleSearch(query) {
       searchQuery = query;
+      ['city-search', 'city-search-mete'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value !== query) el.value = query;
+      });
       renderLeaderboard();
       renderCards();
     }
@@ -1512,90 +1583,103 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
       }
     }
 
-    // Render City Cards
+    // Coordinate delle mete (le citta' aggiunte con l'AI portano lat/lng proprie)
+    const CITY_COORDS = {
+      jomtien: [12.885, 100.876], sattahip: [12.756, 100.938], pattaya: [12.935, 100.883],
+      bangkok: [13.756, 100.502], udonthani: [17.415, 102.787], khonkaen: [16.432, 102.824],
+      rayong: [12.668, 101.445], huahin: [12.568, 99.958], krabi: [8.033, 98.827],
+      rawai: [7.779, 98.327], phuket: [7.896, 98.297], kosamui: [9.512, 100.014],
+      chiangmai: [18.788, 98.985]
+    };
+    function cityLatLng(item) {
+      if (item && typeof item.lat === 'number' && typeof item.lng === 'number') return [item.lat, item.lng];
+      return CITY_COORDS[item && item.id] || null;
+    }
+    function scoreColor(score) {
+      const v = parseFloat(score);
+      if (v >= 8.5) return '#22d3ee';
+      if (v >= 7.5) return '#34d399';
+      if (v >= 6.5) return '#fbbf24';
+      return '#f87171';
+    }
+    function pinIcon(score) {
+      return L.divIcon({
+        className: '', iconSize: [30, 30], iconAnchor: [15, 15], popupAnchor: [0, -14],
+        html: `<div class="map-pin" style="background:${scoreColor(score)}">${score}</div>`
+      });
+    }
+    const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+    const TILE_ATTR = '&copy; OpenStreetMap';
+    let meteMap = null, meteMarkers = null;
+
+    function initMeteMap() {
+      if (typeof L === 'undefined' || meteMap) return;
+      const el = document.getElementById('mete-map');
+      if (!el) return;
+      meteMap = L.map(el, { zoomControl: true, attributionControl: true, zoomSnap: 0.25 })
+        .setView([13.2, 100.9], 5);
+      L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 18 }).addTo(meteMap);
+      meteMarkers = L.layerGroup().addTo(meteMap);
+      updateMeteMap();
+      fitMapToAll();
+    }
+    function updateMeteMap() {
+      if (!meteMap || !meteMarkers) return;
+      meteMarkers.clearLayers();
+      getSortedDestinations().forEach(item => {
+        const ll = cityLatLng(item);
+        if (!ll) return;
+        const score = calculateScore(item);
+        L.marker(ll, { icon: pinIcon(score), title: item.name })
+          .bindPopup(`<b>${item.name}</b><br><span style="color:#94a3b8">${item.zone}</span><br>
+            <span style="font-family:monospace">${item.budgetEurMin}€ – ${item.budgetEurMax}€ /mese</span><br>
+            <button onclick="openModal('${item.id}')" style="margin-top:6px;color:#67e8f9;font-weight:700">Apri scheda ➔</button>`)
+          .addTo(meteMarkers);
+      });
+    }
+    function fitMapToAll() {
+      if (!meteMap) return;
+      // tutta la Thailandia, da Chiang Mai a Phuket
+      meteMap.fitBounds([[6.2, 97.6], [20.2, 105.4]], { padding: [4, 4] });
+    }
+    function focusOnMap(id) {
+      const item = destinations.find(d => d.id === id);
+      const ll = cityLatLng(item);
+      if (!meteMap || !ll) return;
+      meteMap.setView(ll, 10);
+      meteMarkers.eachLayer(m => { const p = m.getLatLng(); if (p.lat === ll[0] && p.lng === ll[1]) m.openPopup(); });
+      document.getElementById('main-content-scroll').scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Elenco Mete: compatto, in ordine alfabetico; il dettaglio si apre al tocco
     function renderCards() {
       const container = document.getElementById('city-cards-grid');
       container.innerHTML = '';
-      const sorted = getSortedDestinations();
-
-      sorted.forEach((item) => {
+      const list = getSortedDestinations().slice().sort((a, b) => a.name.localeCompare(b.name, 'it'));
+      if (list.length === 0) {
+        container.innerHTML = `<div class="py-6 text-center text-sm text-slate-400 bg-cardbg rounded-xl border border-bordercol">Nessuna meta trovata.</div>`;
+      }
+      list.forEach(item => {
         const score = calculateScore(item);
-        const card = document.createElement('div');
-        card.className = "bg-cardbg border border-bordercol rounded-2xl p-5 hover:border-cyan-500/50 hover:shadow-cyan-950/20 hover:shadow-xl transition flex flex-col justify-between group";
-
-        card.innerHTML = `
-          <div>
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <div>
-                <span class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">${item.zone}</span>
-                <h3 class="text-xl font-black text-white group-hover:text-cyan-300 transition">${item.name}</h3>
-              </div>
-              <div class="text-right">
-                <span class="inline-block px-2.5 py-0.5 rounded-lg text-xs font-black bg-cyan-950 text-cyan-300 border border-cyan-700">
-                  ★ ${score}
-                </span>
-              </div>
+        const row = document.createElement('div');
+        row.className = "bg-cardbg border border-bordercol rounded-xl p-3.5 active:bg-slate-800/80 hover:border-cyan-500/50 transition cursor-pointer";
+        row.onclick = () => openModal(item.id);
+        row.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <h3 class="text-base font-black text-white leading-tight">${item.name}</h3>
+              <span class="text-xs text-slate-400">${item.zone}</span>
             </div>
-
-            <span class="badge-pill ${item.badgeColor} mb-3">${item.badge}</span>
-            <p class="text-xs text-slate-300 mb-4 leading-relaxed">${item.summary}</p>
-
-            <!-- Metrics Bars -->
-            <div class="space-y-2 text-xs mb-5 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-              <div>
-                <div class="flex justify-between text-[11px] mb-1">
-                  <span class="text-purple-300 font-medium">🍸 Vita Notturna</span>
-                  <span class="text-slate-200 font-bold">${item.nightlife}/10</span>
-                </div>
-                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                  <div class="bg-purple-500 h-1.5 rounded-full" style="width: ${item.nightlife * 10}%"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-[11px] mb-1">
-                  <span class="text-pink-300 font-medium">💍 Incontri Stabili</span>
-                  <span class="text-slate-200 font-bold">${item.dating}/10</span>
-                </div>
-                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                  <div class="bg-pink-500 h-1.5 rounded-full" style="width: ${item.dating * 10}%"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-[11px] mb-1">
-                  <span class="text-emerald-300 font-medium">💰 Convenienza Spese</span>
-                  <span class="text-slate-200 font-bold">${item.cost}/10</span>
-                </div>
-                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                  <div class="bg-emerald-500 h-1.5 rounded-full" style="width: ${item.cost * 10}%"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-[11px] mb-1">
-                  <span class="text-cyan-300 font-medium">🏥 Sanità & Servizi</span>
-                  <span class="text-slate-200 font-bold">${item.services}/10</span>
-                </div>
-                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                  <div class="bg-cyan-500 h-1.5 rounded-full" style="width: ${item.services * 10}%"></div>
-                </div>
-              </div>
-            </div>
+            <span class="shrink-0 px-2 py-0.5 rounded-lg text-xs font-black bg-cyan-950 text-cyan-300 border border-cyan-700 font-mono">★ ${score}</span>
           </div>
-
-          <div class="pt-3 border-t border-bordercol flex items-center justify-between">
-            <div>
-              <span class="text-[10px] text-slate-400 block">Budget mensile:</span>
-              <span class="text-xs font-mono font-bold text-slate-200">${item.budgetEurMin}€ - ${item.budgetEurMax}€</span>
-            </div>
-            <button onclick="openModal('${item.id}')" class="text-xs bg-slate-800 hover:bg-cyan-600 hover:text-white px-3 py-1.5 rounded-lg border border-bordercol transition font-semibold">
-              Scheda ➔
-            </button>
-          </div>
-        `;
-        container.appendChild(card);
+          <p class="clamp-2 text-[13px] text-slate-300 leading-snug mt-1.5">${item.summary}</p>
+          <div class="flex items-center justify-between mt-2 gap-2">
+            <span class="text-xs font-mono font-semibold text-slate-300">${item.budgetEurMin}€ – ${item.budgetEurMax}€ <span class="text-slate-500">/mese</span></span>
+            <button onclick="event.stopPropagation(); focusOnMap('${item.id}')" class="text-xs text-cyan-300 font-semibold px-2 py-1 rounded-lg bg-slate-800 border border-slate-700">📍 Mappa</button>
+          </div>`;
+        container.appendChild(row);
       });
+      updateMeteMap();
     }
 
     // Modal Handling
@@ -1621,6 +1705,8 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
               </div>
             </div>
           </div>
+
+          <div id="modal-map" class="w-full h-44 rounded-xl overflow-hidden border border-bordercol"></div>
 
           <!-- Quick Metrics Grid -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1703,6 +1789,21 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
       `;
 
       modal.classList.remove('hidden');
+      showModalMap(item);
+    }
+
+    let modalMap = null;
+    function showModalMap(item) {
+      if (modalMap) { modalMap.remove(); modalMap = null; }
+      const el = document.getElementById('modal-map');
+      const ll = cityLatLng(item);
+      if (!el) return;
+      if (typeof L === 'undefined' || !ll) { el.style.display = 'none'; return; }
+      modalMap = L.map(el, { zoomControl: false, attributionControl: false, dragging: true, scrollWheelZoom: false })
+        .setView(ll, 6);
+      L.tileLayer(TILE_URL, { maxZoom: 18 }).addTo(modalMap);
+      L.marker(ll, { icon: pinIcon(calculateScore(item)) }).addTo(modalMap);
+      setTimeout(() => modalMap && modalMap.invalidateSize(), 60);
     }
 
     // Function to delete a custom added city
@@ -1920,17 +2021,337 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
       });
     }
 
-    // Smooth navigation helper
-    function scrollToSection(id) {
-      const el = document.getElementById(id);
-      const container = document.getElementById('main-content-scroll');
-      if (el && container) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Schermate: una sezione alla volta, la barra in basso segue dove sei
+    const VIEW_KEY = "thailandia_expat_view";
+    const SECTION_TO_VIEW = {
+      'leaderboard-section': 'classifica', 'cards-section': 'mete',
+      'radar-section': 'grafici', 'guide-section': 'guida'
+    };
+    function showView(view) {
+      if (view === 'guida') view = 'classifica';
+      if (!['classifica', 'mete', 'grafici', 'pensione', 'pesi'].includes(view)) view = 'classifica';
+      if (view === 'pensione') renderPension(); else stopPensionTimer();
+      document.body.dataset.view = view;
+      document.querySelectorAll('[data-view-btn]').forEach(b => {
+        b.classList.toggle('is-active', b.dataset.viewBtn === view);
+      });
+      const main = document.getElementById('main-content-scroll');
+      if (main) main.scrollTop = 0;
+      const side = document.getElementById('main-sidebar');
+      if (side && view === 'pesi' && window.innerWidth < 768) side.scrollTop = 0;
+      if (view === 'mete') {
+        requestAnimationFrame(() => {
+          if (!meteMap) initMeteMap(); else meteMap.invalidateSize();
+        });
       }
+      if (view === 'grafici') {
+        // i grafici disegnati mentre erano nascosti vanno ridimensionati
+        requestAnimationFrame(() => {
+          if (radarChartInstance) radarChartInstance.resize();
+          if (costChartInstance) costChartInstance.resize();
+        });
+      }
+      try { localStorage.setItem(VIEW_KEY, view); } catch (e) {}
+    }
+    function scrollToSection(id) {
+      showView(SECTION_TO_VIEW[id] || 'classifica');
+    }
+
+    // ===================== PENSIONE =====================
+    // I dati dell'estratto conto restano SOLO su questo telefono (localStorage):
+    // il codice dell'app e' pubblico, i contributi no.
+    const PENSION_KEY = "thailandia_expat_inps_v1";
+    const DAY = 86400000;
+    let pensionTimer = null;
+
+    function loadPensionData() {
+      try { const r = localStorage.getItem(PENSION_KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; }
+    }
+    function savePensionData(d) {
+      try { localStorage.setItem(PENSION_KEY, JSON.stringify(d)); return true; } catch (e) { return false; }
+    }
+
+    function parseInpsXml(text) {
+      const doc = new DOMParser().parseFromString(text, 'application/xml');
+      if (doc.querySelector('parsererror')) throw new Error('Il file non è un XML valido.');
+      const rg = doc.querySelector('RegimeGenerale');
+      if (!rg) throw new Error('Non trovo i contributi del Regime generale: serve il file .xml dell\'estratto conto INPS.');
+      const dateOf = (node) => node ? Date.UTC(+node.querySelector('Anno').textContent, +node.querySelector('Mese').textContent - 1, +node.querySelector('Giorno').textContent) : null;
+      const txt = (el, sel) => { const n = el.querySelector(sel); return n ? n.textContent.trim() : ''; };
+      const rows = [...rg.querySelectorAll('RigaContributi')].map(r => ({
+        from: dateOf(r.querySelector('Dal')),
+        to: dateOf(r.querySelector('Al')),
+        type: txt(r, 'TipoContribuzione'),
+        unit: txt(r, 'TipoContributo'),
+        weeks: parseFloat(txt(r, 'ContributiUtiliDiritto')) || 0,
+        euro: parseFloat(txt(r, 'RetribuzioneEuro')) || 0
+      })).filter(r => r.from && r.to);
+      if (!rows.length) throw new Error('Nel file non ci sono righe di contributi.');
+      const birth = dateOf(doc.querySelector('DatiAnagrafici DataNascita'));
+      const issued = dateOf(doc.querySelector('DataEmissioneEstratto'));
+      // niente nome, codice fiscale o indirizzo: servono solo date e contributi
+      return { birth, issued, rows, loadedAt: Date.now() };
+    }
+
+    function importInpsFile(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = parseInpsXml(String(reader.result));
+          savePensionData(data);
+          renderPension();
+        } catch (err) {
+          alert(err.message);
+        }
+        event.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function clearPensionData() {
+      if (!confirm('Cancello i dati dei contributi da questo telefono?')) return;
+      try { localStorage.removeItem(PENSION_KEY); } catch (e) {}
+      renderPension();
+    }
+
+    // Requisito pensione anticipata uomini (Fornero + aumenti speranza di vita)
+    // fino al 2026: 42a10m | 2027: 42a11m | 2028: 43a1m | dal 2029: +3 mesi previsti (43a4m, come Pensami INPS)
+    function requiredWeeks(year, with2029) {
+      const m = year <= 2026 ? 42 * 12 + 10 : year === 2027 ? 42 * 12 + 11 : (43 * 12 + 1 + (year >= 2029 && with2029 ? 3 : 0));
+      return m * 52 / 12;
+    }
+    const COEFF_AGE = [57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71];
+    const COEFF_VAL = [4.204, 4.308, 4.419, 4.536, 4.663, 4.796, 4.940, 5.088, 5.248, 5.423, 5.608, 5.808, 6.024, 6.257, 6.509]; // % coefficienti 2025-2026
+    function transformCoeff(ageYears) {
+      if (ageYears <= COEFF_AGE[0]) return COEFF_VAL[0] / 100;
+      if (ageYears >= COEFF_AGE[COEFF_AGE.length - 1]) return COEFF_VAL[COEFF_VAL.length - 1] / 100;
+      const i = Math.floor(ageYears) - COEFF_AGE[0];
+      const f = ageYears - Math.floor(ageYears);
+      return (COEFF_VAL[i] + (COEFF_VAL[i + 1] - COEFF_VAL[i]) * f) / 100;
+    }
+    function irpefNetto(lordoAnno) {
+      // IRPEF 2026: 23% fino a 28.000, 33% fino a 50.000, 43% oltre
+      const R = lordoAnno;
+      let tax = Math.min(R, 28000) * 0.23 + Math.max(0, Math.min(R, 50000) - 28000) * 0.33 + Math.max(0, R - 50000) * 0.43;
+      // detrazione redditi da pensione (art. 13 c. 3 TUIR)
+      let det = 0;
+      if (R <= 8500) det = 1955;
+      else if (R <= 28000) det = 700 + 1255 * (28000 - R) / 19500;
+      else if (R <= 50000) det = 700 * (50000 - R) / 22000;
+      tax = Math.max(0, tax - det);
+      const addizionali = R * 0.02; // regionale Veneto + comunale, circa
+      return R - tax - addizionali;
+    }
+
+    function computePension(data, with2029) {
+      const rows = data.rows;
+      // settimane per anno (mesi da artigiano -> settimane), massimo 52 per anno
+      const byYear = {};
+      rows.forEach(r => {
+        const y = new Date(r.from).getUTCFullYear();
+        const w = /mes/i.test(r.unit) ? r.weeks * 52 / 12 : r.weeks;
+        byYear[y] = (byYear[y] || 0) + w;
+      });
+      let baseWeeks = 0, pre96 = 0;
+      Object.keys(byYear).forEach(y => { const w = Math.min(52, byYear[y]); baseWeeks += w; if (+y < 1996) pre96 += w; });
+      const baseEnd = Math.max(...rows.map(r => r.to));
+      const weeksAt = t => baseWeeks + Math.max(0, (t - baseEnd) / DAY) * 52 / 365.25;
+
+      // quando si matura il requisito (si continua a lavorare)
+      let t = baseEnd;
+      for (let i = 0; i < 365 * 20; i++) {
+        if (weeksAt(t) >= requiredWeeks(new Date(t).getUTCFullYear(), with2029)) break;
+        t += DAY;
+      }
+      const matured = t;
+      // finestra di 3 mesi, poi il primo giorno del mese dopo
+      const md = new Date(matured);
+      const decorrenza = Date.UTC(md.getUTCFullYear(), md.getUTCMonth() + 4, 1);
+
+      // stipendio di adesso: ultima riga da dipendente, portata a 52 settimane
+      const lastJob = rows.filter(r => /dipendente/i.test(r.type) && r.weeks > 0).sort((a, b) => b.to - a.to)[0];
+      const salary = lastJob ? lastJob.euro / lastJob.weeks * 52 : 0;
+
+      // retribuzioni per anno (dipendente + cassa integrazione + malattia), anni futuri stimati
+      const salByYear = {};
+      rows.forEach(r => {
+        if (!r.euro) return;
+        const y = new Date(r.from).getUTCFullYear();
+        salByYear[y] = (salByYear[y] || 0) + r.euro;
+      });
+      const endYear = new Date(baseEnd).getUTCFullYear();
+      const matYear = md.getUTCFullYear();
+      const lastFull = salByYear[endYear] && byYear[endYear] < 52 ? salary : salByYear[endYear];
+      const annual = y => (y < endYear ? (salByYear[y] || 0) : y === endYear ? lastFull : salary);
+
+      // QUOTA RETRIBUTIVA (anni fino al 1995: meno di 18 anni -> sistema misto)
+      const yearsPre96 = pre96 / 52;
+      let sum10 = 0;
+      for (let y = matYear - 9; y <= matYear; y++) sum10 += annual(y);
+      const avg10 = sum10 / 10;
+      const quotaRetributiva = 0.02 * yearsPre96 * avg10;
+
+      // QUOTA CONTRIBUTIVA (dal 1996): montante rivalutato 2,5% l'anno
+      const RIVAL = 0.025;
+      let montante = 0;
+      rows.forEach(r => {
+        const y = new Date(r.from).getUTCFullYear();
+        if (y < 1996 || !r.euro) return;
+        const artigiano = /coadiuvante|art\./i.test(r.type);
+        const aliq = artigiano ? (0.15 + 0.05 * (Math.min(y, 2007) - 1996) / 11) : 0.33;
+        montante += r.euro * aliq * Math.pow(1 + RIVAL, Math.max(0, matYear - y));
+      });
+      // contributi futuri, dall'ultimo dato fino alla maturazione
+      const futureYears = Math.max(0, (matured - baseEnd) / DAY / 365.25);
+      montante += salary * 0.33 * futureYears * Math.pow(1 + RIVAL, futureYears / 2);
+
+      const ageAtDec = (decorrenza - data.birth) / DAY / 365.25;
+      const coeff = transformCoeff(ageAtDec);
+      const quotaContributiva = montante * coeff;
+      const lordoAnno = quotaRetributiva + quotaContributiva;
+      const nettoAnno = irpefNetto(lordoAnno);
+
+      return {
+        baseWeeks, baseEnd, pre96, weeksNow: weeksAt(Date.now()), weeksAt, matured, decorrenza,
+        required: requiredWeeks(matYear, with2029), salary, avg10, yearsPre96, montante, coeff, ageAtDec,
+        quotaRetributiva, quotaContributiva, lordoAnno, nettoAnno,
+        lordoMese: lordoAnno / 13, nettoMese: nettoAnno / 13, byYear, salByYear
+      };
+    }
+
+    const fmtNum = v => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const fmtEur = v => fmtNum(v) + ' €';
+    const fmtDate = t => new Date(t).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+    function weeksToYM(w) {
+      const months = Math.floor(w * 12 / 52 + 1e-6);
+      return `${Math.floor(months / 12)} anni ${months % 12} mesi`;
+    }
+
+    function renderPension() {
+      const box = document.getElementById('pension-body');
+      if (!box) return;
+      const data = loadPensionData();
+      if (!data) {
+        stopPensionTimer();
+        box.innerHTML = `
+          <div class="bg-cardbg border border-bordercol rounded-2xl p-5 space-y-3">
+            <p class="text-sm text-slate-200 leading-relaxed">Carica il file <b>.xml</b> del tuo estratto conto INPS: conto le settimane, calcolo quando vai in pensione e stimo quanto prendi.</p>
+            <p class="text-xs text-slate-400 leading-relaxed">Sull'iPhone: tocca il tasto, poi <b>Sfoglia → iCloud Drive → ESTRATTOCONTO CONTRIBUTIVO INPS</b> e scegli il file che finisce in <b>.xml</b>.</p>
+            <button onclick="document.getElementById('inps-file').click()" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-sm active:scale-[.98] transition">📄 Carica estratto conto INPS</button>
+            <p class="text-[11px] text-slate-500">I dati restano solo su questo telefono: non vanno su internet né nel codice dell'app.</p>
+          </div>`;
+        return;
+      }
+      const P = computePension(data, true);
+      const Q = computePension(data, false);
+      const pct = Math.min(100, P.weeksNow / P.required * 100);
+      const missing = Math.max(0, P.required - P.weeksNow);
+      const years = Object.keys(P.byYear).map(Number).sort((a, b) => b - a);
+
+      box.innerHTML = `
+        <!-- Timer -->
+        <div class="rounded-2xl p-5 border border-amber-500/40 bg-gradient-to-br from-amber-950/60 via-slate-900 to-slate-900 shadow-xl">
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-300">La pensione arriva tra</span>
+          <div id="pension-countdown" class="grid grid-cols-4 gap-2 mt-3 text-center"></div>
+          <p class="text-sm text-slate-200 mt-4">Prima pensione: <b class="text-amber-200">${fmtDate(P.decorrenza)}</b></p>
+          <p class="text-xs text-slate-400 mt-1 leading-relaxed">Requisito pieno il ${fmtDate(P.matured)} (${weeksToYM(P.required)}), poi 3 mesi di finestra.
+            Se nel 2029 l'età per la pensione non aumenta: <b class="text-slate-200">${fmtDate(Q.decorrenza)}</b>.</p>
+        </div>
+
+        <!-- Contributi -->
+        <div class="bg-cardbg border border-bordercol rounded-2xl p-5 space-y-3">
+          <div class="flex items-end justify-between gap-2">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Contributi oggi (stima)</span>
+              <div class="text-2xl font-black text-white">${weeksToYM(P.weeksNow)}</div>
+              <span class="text-xs text-slate-400">${Math.round(P.weeksNow)} settimane su ${Math.round(P.required)}</span>
+            </div>
+            <span class="text-2xl font-black font-mono text-cyan-300">${pct.toFixed(0)}%</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden"><div class="h-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-amber-400" style="width:${pct}%"></div></div>
+          <p class="text-xs text-slate-400 leading-relaxed">Nell'estratto conto: <b class="text-slate-200">${Math.round(P.baseWeeks)} settimane</b> al ${fmtDate(P.baseEnd)} (${weeksToYM(P.baseWeeks)}). Da lì conto che continui a lavorare. Mancano circa <b class="text-slate-200">${Math.ceil(missing)} settimane</b>.</p>
+        </div>
+
+        <!-- Stima importo -->
+        <div class="bg-cardbg border border-bordercol rounded-2xl p-5 space-y-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Quanto prendi (stima, 13 mensilità)</span>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-slate-900 rounded-xl p-3 border border-slate-800 text-center">
+              <span class="text-xs text-slate-400 block">Lordo al mese</span>
+              <span class="text-2xl font-black text-white font-mono">${fmtEur(P.lordoMese)}</span>
+            </div>
+            <div class="bg-slate-900 rounded-xl p-3 border border-emerald-800/60 text-center">
+              <span class="text-xs text-emerald-300 block">Netto al mese</span>
+              <span class="text-2xl font-black text-emerald-300 font-mono">${fmtEur(P.nettoMese)}</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">All'anno: ${fmtEur(P.lordoAnno)} lordi, ${fmtEur(P.nettoAnno)} netti con le tasse italiane.
+            In baht: circa ${fmtNum(P.nettoMese * 38.5)} ฿ netti al mese.</p>
+          <details class="text-xs text-slate-300">
+            <summary class="cursor-pointer text-cyan-300 font-semibold py-1">Come l'ho calcolata</summary>
+            <ul class="mt-2 space-y-1.5 leading-relaxed list-disc pl-4">
+              <li><b>Sistema misto.</b> Al 1995 avevi ${P.yearsPre96.toFixed(0)} anni di contributi (meno di 18). Fino al 1995 vale il retributivo, dal 1996 il contributivo.</li>
+              <li><b>Quota retributiva:</b> 2% × ${P.yearsPre96.toFixed(0)} anni × ${fmtEur(P.avg10)} (media stipendi degli ultimi 10 anni) = ${fmtEur(P.quotaRetributiva)} l'anno.</li>
+              <li><b>Quota contributiva:</b> montante di circa ${fmtEur(P.montante)} × coefficiente ${(P.coeff * 100).toFixed(2)}% a ${P.ageAtDec.toFixed(1)} anni = ${fmtEur(P.quotaContributiva)} l'anno.
+                Il 33% dello stipendio da dipendente, dal 15 al 20% sul reddito da artigiano, rivalutati al 2,5% l'anno.</li>
+              <li><b>Futuro:</b> stipendio di ${fmtEur(P.salary)} l'anno fino alla pensione.</li>
+              <li><b>Netto:</b> IRPEF 2026 (23% / 33%) meno la detrazione per pensionati, più circa 2% di addizionali.</li>
+              <li><b class="text-amber-300">VERIFICA</b> Se vivi in Thailandia, con la convenzione Italia–Thailandia la pensione INPS da lavoro privato potrebbe essere pagata lorda e tassata là. Il netto cambia: chiedi al patronato.</li>
+              <li>È una stima per orientarti. La cifra vera la dà l'INPS (servizio "Pensami" o ECOCERT dal patronato).</li>
+            </ul>
+          </details>
+        </div>
+
+        <!-- Anno per anno -->
+        <details class="bg-cardbg border border-bordercol rounded-2xl p-4">
+          <summary class="cursor-pointer text-sm font-bold text-white">Contributi anno per anno</summary>
+          <div class="mt-3 max-h-[360px] overflow-y-auto">
+            <table class="w-full text-xs">
+              <thead class="text-slate-400"><tr><th class="text-left py-1">Anno</th><th class="text-right py-1">Settimane</th><th class="text-right py-1">Retribuzione</th></tr></thead>
+              <tbody class="divide-y divide-bordercol/50">
+                ${years.map(y => `<tr><td class="py-1.5 font-mono">${y}</td><td class="py-1.5 text-right font-mono ${P.byYear[y] > 52 ? 'text-amber-300' : ''}">${Math.min(52, P.byYear[y]).toFixed(0)}</td><td class="py-1.5 text-right font-mono text-slate-300">${P.salByYear[y] ? fmtEur(P.salByYear[y]) : '—'}</td></tr>`).join('')}
+              </tbody>
+            </table>
+            <p class="text-[11px] text-slate-500 mt-2">Al massimo 52 settimane per anno: dove i periodi si sovrappongono (militare, cassa integrazione) conta una volta sola. Il fondo spettacolo (DJ) è sovrapposto e non aggiunge settimane.</p>
+          </div>
+        </details>
+
+        <div class="flex gap-2">
+          <button onclick="document.getElementById('inps-file').click()" class="flex-1 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm font-semibold text-slate-200">📄 Carica estratto nuovo</button>
+          <button onclick="clearPensionData()" class="py-2.5 px-4 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-400">Cancella</button>
+        </div>
+        <p class="text-[11px] text-slate-500 text-center">Estratto conto emesso il ${data.issued ? fmtDate(data.issued) : '—'} · dati salvati solo su questo telefono</p>`;
+
+      startPensionTimer(P.decorrenza);
+    }
+
+    function startPensionTimer(target) {
+      stopPensionTimer();
+      const tick = () => {
+        const el = document.getElementById('pension-countdown');
+        if (!el) return stopPensionTimer();
+        let ms = Math.max(0, target - Date.now());
+        const d = Math.floor(ms / DAY); ms -= d * DAY;
+        const h = Math.floor(ms / 3600000); ms -= h * 3600000;
+        const m = Math.floor(ms / 60000); ms -= m * 60000;
+        const sec = Math.floor(ms / 1000);
+        const cell = (v, l) => `<div class="bg-slate-950/70 rounded-xl py-2.5 border border-amber-500/20"><div class="text-2xl sm:text-3xl font-black font-mono text-amber-200 tabular-nums">${v}</div><div class="text-[11px] text-slate-400">${l}</div></div>`;
+        el.innerHTML = cell(fmtNum(d), 'giorni') + cell(String(h).padStart(2, '0'), 'ore') + cell(String(m).padStart(2, '0'), 'minuti') + cell(String(sec).padStart(2, '0'), 'secondi');
+      };
+      tick();
+      pensionTimer = setInterval(tick, 1000);
+    }
+    function stopPensionTimer() {
+      if (pensionTimer) { clearInterval(pensionTimer); pensionTimer = null; }
     }
 
     // App Initialization
     function initApp() {
+      let startView = 'classifica';
+      try { startView = localStorage.getItem(VIEW_KEY) || 'classifica'; } catch (e) {}
+      showView(startView);
       // Genera programmaticamente icone PNG canvas per piena compatibilità iOS / Safari Schermata Home
       generateAppIcons();
 
