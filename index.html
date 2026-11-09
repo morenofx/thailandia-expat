@@ -134,6 +134,15 @@
     .modal-close-bar { position: sticky; top: 0; z-index: 1100; display: flex; justify-content: flex-end; height: 0; }
     .modal-close-bar button { transform: translate(8px, -8px); }
     .leaflet-container { isolation: isolate; }
+    /* mappa a schermo intero */
+    #mete-map-wrap.map-full {
+      position: fixed; inset: 0; z-index: 60; border-radius: 0; border: 0; margin: 0 !important;
+      display: flex; flex-direction: column; background: #0b1120;
+    }
+    #mete-map-wrap.map-full #mete-map { flex: 1 1 auto; height: auto !important; }
+    #mete-map-wrap.map-full #map-full-btn { top: calc(env(safe-area-inset-top, 0px) + 10px); }
+    #mete-map-wrap.map-full .leaflet-top { top: env(safe-area-inset-top, 0px); }
+    #mete-map-wrap.map-full .map-foot { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); }
     .leaflet-container { background: #aad3df; font-family: inherit; }
     .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #151f32; color: #e2e8f0; border: 1px solid #24344d; }
     .leaflet-popup-content { margin: 10px 12px; font-size: 13px; }
@@ -476,9 +485,11 @@
           <p class="text-xs text-slate-400">Tocca una meta per la scheda completa</p>
         </div>
       </div>
-      <div class="rounded-2xl overflow-hidden border border-bordercol shadow-xl">
+      <div id="mete-map-wrap" class="relative rounded-2xl overflow-hidden border border-bordercol shadow-xl">
         <div id="mete-map" class="w-full h-[380px] sm:h-[460px]"></div>
-        <div class="bg-slate-950/80 px-3 py-2 text-[11px] text-slate-400 flex items-center justify-between gap-2">
+        <button onclick="toggleMapFull()" id="map-full-btn" aria-label="Mappa a schermo intero"
+          class="absolute top-2.5 right-2.5 z-[1000] w-11 h-11 rounded-xl bg-slate-900/90 border border-slate-600 text-white text-lg flex items-center justify-center shadow-lg active:scale-90 transition">⛶</button>
+        <div class="map-foot bg-slate-950/80 px-3 py-2 text-[11px] text-slate-400 flex items-center justify-between gap-2">
           <span>Il numero sul pallino è il punteggio. Tocca per la scheda.</span>
           <button onclick="fitMapToAll()" class="shrink-0 text-cyan-300 font-semibold">Tutta la Thailandia</button>
         </div>
@@ -1613,6 +1624,17 @@
       // tutta la Thailandia, da Chiang Mai a Phuket
       meteMap.fitBounds([[6.2, 97.6], [20.2, 105.4]], { padding: [4, 4] });
     }
+    function toggleMapFull(force) {
+      const wrap = document.getElementById('mete-map-wrap');
+      const btn = document.getElementById('map-full-btn');
+      if (!wrap) return;
+      const on = typeof force === 'boolean' ? force : !wrap.classList.contains('map-full');
+      wrap.classList.toggle('map-full', on);
+      btn.textContent = on ? '✕' : '⛶';
+      btn.setAttribute('aria-label', on ? 'Chiudi mappa' : 'Mappa a schermo intero');
+      setTimeout(() => { if (meteMap) meteMap.invalidateSize(); }, 50);
+    }
+
     function focusOnMap(id) {
       const item = destinations.find(d => d.id === id);
       const ll = cityLatLng(item);
@@ -1655,6 +1677,7 @@
 
     // Modal Handling
     function openModal(id) {
+      toggleMapFull(false);
       const item = destinations.find(d => d.id === id);
       if (!item) return;
       const score = calculateScore(item);
@@ -2003,6 +2026,7 @@
       if (!['classifica', 'mete', 'grafici', 'pensione', 'pesi'].includes(view)) view = 'classifica';
       if (view === 'pensione') renderPension(); else stopPensionTimer();
       document.body.dataset.view = view;
+      if (typeof toggleMapFull === 'function' && view !== 'mete') toggleMapFull(false);
       document.querySelectorAll('[data-view-btn]').forEach(b => {
         b.classList.toggle('is-active', b.dataset.viewBtn === view);
       });
@@ -2030,7 +2054,7 @@
 
     // ===================== AGGIORNA =====================
     // Dalla schermata Home non c'e' il tasto ricarica di Safari: questo scarica l'ultima versione
-    const APP_VERSION = "2026.11.09c";
+    const APP_VERSION = "2026.11.09d";
     // All'apertura (e quando torni sull'app) controlla se online c'e' una versione nuova
     async function checkForUpdate() {
       try {
