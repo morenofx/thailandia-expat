@@ -144,7 +144,8 @@
     #mete-map-wrap.map-full #mete-map { flex: 1 1 auto; height: auto !important; }
     #mete-map-wrap.map-full #map-full-btn { top: calc(env(safe-area-inset-top, 0px) + 10px); }
     #mete-map-wrap.map-full .leaflet-top { top: env(safe-area-inset-top, 0px); }
-    #mete-map-wrap.map-full .map-foot { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); }
+    #mete-map-wrap.map-full .map-close-bottom { display: block; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); }
+    #mete-map-wrap.map-full .map-foot { padding-bottom: 8px !important; }
     .leaflet-container { background: #aad3df; font-family: inherit; }
     .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #151f32; color: #e2e8f0; border: 1px solid #24344d; }
     .leaflet-popup-content { margin: 10px 12px; font-size: 13px; }
@@ -495,6 +496,7 @@
           <span>Il numero sul pallino è il punteggio. Tocca per la scheda.</span>
           <button onclick="fitMapToAll()" class="shrink-0 text-cyan-300 font-semibold">Tutta la Thailandia</button>
         </div>
+        <button onclick="toggleMapFull(false)" class="map-close-bottom hidden w-full py-3.5 bg-slate-800 border-t border-slate-700 text-white font-bold text-base">✕ Chiudi mappa</button>
       </div>
       <div class="relative">
         <input type="search" id="city-search-mete" placeholder="Cerca città o zona (Jomtien, Isan...)" oninput="handleSearch(this.value)"
@@ -1646,6 +1648,24 @@
       setTimeout(() => { if (meteMap) meteMap.invalidateSize(); }, 50);
     }
 
+    // Dalla scheda di una citta': mappa grande a schermo intero centrata su di lei
+    function openCityOnBigMap(id) {
+      closeModal();
+      showView('mete');
+      requestAnimationFrame(() => {
+        if (!meteMap) initMeteMap();
+        toggleMapFull(true);
+        setTimeout(() => {
+          const item = destinations.find(d => d.id === id);
+          const ll = cityLatLng(item);
+          if (!meteMap || !ll) return;
+          meteMap.invalidateSize();
+          meteMap.setView(ll, 11);
+          meteMarkers.eachLayer(m => { const p = m.getLatLng(); if (p.lat === ll[0] && p.lng === ll[1]) m.openPopup(); });
+        }, 120);
+      });
+    }
+
     function focusOnMap(id) {
       const item = destinations.find(d => d.id === id);
       const ll = cityLatLng(item);
@@ -1698,20 +1718,24 @@
       content.innerHTML = `
         <div class="space-y-5">
           <div class="border-b border-bordercol pb-4">
-            <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center justify-between gap-3 pr-12">
               <div>
                 <span class="badge-pill ${item.badgeColor} mb-2">${item.badge}</span>
-                <h3 class="text-2xl font-black text-white pr-10">${item.name}</h3>
+                <h3 class="text-2xl font-black text-white">${item.name}</h3>
                 <p class="text-xs text-slate-400">${item.zone} • ${item.type}</p>
               </div>
               <div class="text-right">
                 <span class="text-xs text-slate-400 block">Punteggio:</span>
-                <span class="text-xl font-black text-cyan-300 font-mono">${score} / 10</span>
+                <span class="text-xl font-black text-cyan-300 font-mono whitespace-nowrap">${score}<span class="text-sm text-slate-400">/10</span></span>
               </div>
             </div>
           </div>
 
-          <div id="modal-map" class="w-full h-44 rounded-xl overflow-hidden border border-bordercol"></div>
+          <div class="relative">
+            <div id="modal-map" class="w-full h-44 rounded-xl overflow-hidden border border-bordercol"></div>
+            <button onclick="openCityOnBigMap('${item.id}')" aria-label="Mappa a schermo intero"
+              class="absolute top-2 right-2 z-[1000] h-10 px-3 rounded-xl bg-slate-900/90 border border-slate-600 text-white text-sm font-semibold flex items-center gap-1.5 shadow-lg active:scale-95 transition">⛶ Ingrandisci</button>
+          </div>
 
           <!-- Quick Metrics Grid -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1793,6 +1817,7 @@
         </div>
       `;
 
+      content.insertAdjacentHTML('beforeend', `<button onclick="closeModal()" class="mt-5 w-full py-3.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold text-base active:scale-[.98] transition">✕ Chiudi scheda</button>`);
       modal.classList.remove('hidden');
       showModalMap(item);
     }
@@ -2065,7 +2090,7 @@
 
     // ===================== AGGIORNA =====================
     // Dalla schermata Home non c'e' il tasto ricarica di Safari: questo scarica l'ultima versione
-    const APP_VERSION = "2026.11.09g";
+    const APP_VERSION = "2026.11.09i";
     // All'apertura (e quando torni sull'app) controlla se online c'e' una versione nuova
     async function checkForUpdate() {
       try {
