@@ -1161,7 +1161,7 @@
       for (let i = 0; i < maxRetries; i++) {
         try {
           const res = await fetch(url, options);
-          if (res.ok || (res.status >= 400 && res.status < 500)) return res; // 4xx: inutile riprovare
+          if (![429, 502, 504].includes(res.status)) return res; // riprovo solo se il server e' momentaneamente occupato
         } catch (err) {
           // Silent retry
         }
@@ -1191,19 +1191,25 @@
       submitBtn.disabled = true;
 
       try {
-        let pin = getAiPin();
-        if (!pin) {
-          pin = (prompt("PIN per l'AI (quello delle tue app, una volta sola):") || "").trim();
-          if (!pin) throw new Error("serve il PIN");
+        // il PIN lo chiedo solo se il server lo vuole (e se quello salvato e' sbagliato)
+        const ask = async (pin) => {
+          const r = await fetchWithRetry(AI_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-App-Pin': pin },
+            body: JSON.stringify({ city: cityName })
+          });
+          return { response: r, result: await r.json().catch(() => ({})) };
+        };
+        let { response, result } = await ask(getAiPin());
+        if (response.status === 401) {
+          const hadPin = !!getAiPin();
+          setAiPin('');
+          const pin = (prompt(hadPin ? "PIN sbagliato. Scrivi il PIN dell'AI:" : "Scrivi il PIN dell'AI (NON la città: quella l'hai già scritta). Te lo chiedo una volta sola.") || "").trim();
+          if (!pin) throw new Error("serve il PIN dell'AI");
+          ({ response, result } = await ask(pin));
+          if (response.status === 401) throw new Error("PIN sbagliato, riprova");
           setAiPin(pin);
         }
-        const response = await fetchWithRetry(AI_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-App-Pin': pin },
-          body: JSON.stringify({ city: cityName })
-        });
-        const result = await response.json().catch(() => ({}));
-        if (response.status === 401) { setAiPin(''); throw new Error("PIN sbagliato, riprova e te lo richiedo"); }
         if (!response.ok) throw new Error(result.error || `errore ${response.status}`);
         const newCity = result.city;
         if (!newCity || !newCity.name) throw new Error("risposta vuota");
@@ -1228,7 +1234,7 @@
       } catch (err) {
         const msg = /failed to fetch|load failed|networkerror/i.test(err.message)
           ? "non riesco a raggiungere il server AI (sei collegato a internet?)"
-          : err.message;
+          : err.message.replace(/\.+$/, '');
         errorBox.textContent = `Non sono riuscito ad aggiungere la città: ${msg}.`;
         errorBox.classList.remove('hidden');
       } finally {
@@ -2057,7 +2063,7 @@
 
     // ===================== AGGIORNA =====================
     // Dalla schermata Home non c'e' il tasto ricarica di Safari: questo scarica l'ultima versione
-    const APP_VERSION = "2026.11.09e";
+    const APP_VERSION = "2026.11.09f";
     // All'apertura (e quando torni sull'app) controlla se online c'e' una versione nuova
     async function checkForUpdate() {
       try {
