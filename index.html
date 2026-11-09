@@ -289,8 +289,8 @@
     <div class="p-4 sm:p-5 space-y-4 flex-1">
       <div class="flex items-center justify-between border-b border-bordercol/60 pb-2">
         <div>
-          <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Pesi Decisionali</span>
-          <h2 class="text-xs sm:text-sm font-bold text-white">Priorità Personali</h2>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Cosa conta per te</span>
+          <h2 class="text-xs sm:text-sm font-bold text-white">Priorità per la classifica</h2>
         </div>
         <button onclick="resetWeights()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded border border-slate-700 transition">
           🔄 Reset
@@ -582,7 +582,7 @@
     </button>
     <button onclick="showView('pesi')" data-view-btn="pesi" class="view-btn flex-1 flex flex-col items-center pt-1.5 pb-0.5 text-slate-400 transition active:scale-95">
       <span class="text-xl leading-none">⚙️</span>
-      <span class="mt-1 text-[11px] font-semibold">Pesi</span>
+      <span class="mt-1 text-[11px] font-semibold">Impostazioni</span>
       <span class="view-dot"></span>
     </button>
   </nav>
@@ -617,7 +617,7 @@
         <div id="ai-loading-indicator" class="hidden bg-slate-900/90 border border-cyan-500/40 p-4 rounded-xl text-center space-y-2">
           <div class="inline-block animate-spin text-2xl">🌀</div>
           <p class="text-xs text-cyan-300 font-semibold">Gemini AI sta analizzando la città...</p>
-          <p class="text-[11px] text-slate-400">Valutazione movida, donne per matrimonio, costi in THB e ospedali.</p>
+          <p class="text-[11px] text-slate-400">Valutazione movida, relazioni, costi in baht e ospedali.</p>
         </div>
 
         <div id="ai-error-message" class="hidden bg-rose-950/50 border border-rose-800 text-rose-300 text-xs p-3 rounded-xl">
@@ -1141,7 +1141,7 @@
       for (let i = 0; i < maxRetries; i++) {
         try {
           const res = await fetch(url, options);
-          if (res.ok) return res;
+          if (res.ok || (res.status >= 400 && res.status < 500)) return res; // 4xx: inutile riprovare
         } catch (err) {
           // Silent retry
         }
@@ -1150,6 +1150,12 @@
       }
       return fetch(url, options);
     }
+
+    // "+ Citta'" passa dalla funzione su Vercel: la chiave Gemini non sta mai nell'app
+    const AI_ENDPOINT = location.hostname.endsWith('vercel.app') ? '/api/city' : 'https://thailandia-expat.vercel.app/api/city';
+    const PIN_KEY = 'thailandia_expat_ai_pin';
+    function getAiPin() { try { return localStorage.getItem(PIN_KEY) || ''; } catch (e) { return ''; } }
+    function setAiPin(v) { try { v ? localStorage.setItem(PIN_KEY, v) : localStorage.removeItem(PIN_KEY); } catch (e) {} }
 
     async function handleGenerateCity(event) {
       event.preventDefault();
@@ -1164,71 +1170,23 @@
       errorBox.classList.add('hidden');
       submitBtn.disabled = true;
 
-      const apiKey = "";
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview:generateContent?key=${apiKey}`;
-
-      const systemPrompt = `Sei il massimo esperto di espatrio, pensionamento e vita in Thailandia.
-L'utente ti fornirà il nome di una località o isola thailandese. Restituisci ESCLUSIVAMENTE un oggetto JSON valido che rispetti rigorosamente lo schema fornito, con testi in lingua italiana adatti a un pensionato o espatriato di 50-60 anni che cerca: vita notturna, relazioni stabili e compagna duratura, budget di vita mensile realistico e qualità della sanità.`;
-
-      const promptText = `Genera i dati completi per la località thailandese: "${cityName}".`;
-
-      const payload = {
-        contents: [
-          { role: "user", parts: [{ text: promptText }] }
-        ],
-        systemInstruction: {
-          parts: [{ text: systemPrompt }]
-        },
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "OBJECT",
-            properties: {
-              id: { type: "STRING" },
-              name: { type: "STRING" },
-              zone: { type: "STRING" },
-              type: { type: "STRING" },
-              nightlife: { type: "NUMBER", description: "Voto da 1 a 10 per locali e movida" },
-              dating: { type: "NUMBER", description: "Voto da 1 a 10 per facilità di trovare moglie o compagna seria e duratura per un 60enne" },
-              cost: { type: "NUMBER", description: "Voto da 1 a 10 per convenienza economica (10 = super economico)" },
-              services: { type: "NUMBER", description: "Voto da 1 a 10 per qualità ospedali e comodità" },
-              beachQuality: { type: "NUMBER", description: "Voto da 1 a 10 per mare e spiagge (1 se non c'è il mare)" },
-              lat: { type: "NUMBER", description: "Latitudine del centro della località (gradi decimali)" },
-              lng: { type: "NUMBER", description: "Longitudine del centro della località (gradi decimali)" },
-              budgetThb: { type: "STRING", description: "Range mensile in Baht, es. 28.000 - 45.000" },
-              budgetEurMin: { type: "INTEGER", description: "Spesa minima mensile in Euro" },
-              budgetEurMax: { type: "INTEGER", description: "Spesa confortevole mensile in Euro" },
-              badge: { type: "STRING", description: "Titolo sintetico breve, es. Natura & Serenità" },
-              badgeColor: { type: "STRING", description: "Classe tailwind per badge (usa: bg-teal-900/60 text-teal-300 border-teal-700 oppure bg-cyan-900/60 text-cyan-300 border-cyan-700)" },
-              summary: { type: "STRING", description: "Breve sintesi di 1-2 frasi" },
-              datingDynamic: { type: "STRING", description: "Dettaglio su come trovare una compagna seria a 50-60 anni in questa zona" },
-              nightlifeDetail: { type: "STRING", description: "Dettaglio sulla vita serale, bar, musica live" },
-              healthcare: { type: "STRING", description: "Ospedali principali e cliniche private vicine" },
-              housing: { type: "STRING", description: "Tipologia e costo degli affitti mensili" },
-              pros: { type: "ARRAY", items: { type: "STRING" } },
-              cons: { type: "ARRAY", items: { type: "STRING" } }
-            },
-            required: ["id", "name", "zone", "type", "nightlife", "dating", "cost", "services", "beachQuality", "budgetThb", "budgetEurMin", "budgetEurMax", "badge", "badgeColor", "summary", "datingDynamic", "nightlifeDetail", "healthcare", "housing", "pros", "cons"]
-          }
-        }
-      };
-
       try {
-        const response = await fetchWithRetry(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-          throw new Error(`Errore API Gemini (${response.status})`);
+        let pin = getAiPin();
+        if (!pin) {
+          pin = (prompt("PIN per l'AI (quello delle tue app, una volta sola):") || "").trim();
+          if (!pin) throw new Error("serve il PIN");
+          setAiPin(pin);
         }
-
-        const result = await response.json();
-        const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!jsonText) throw new Error("Risposta vuota da Gemini");
-
-        const newCity = JSON.parse(jsonText);
+        const response = await fetchWithRetry(AI_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-App-Pin': pin },
+          body: JSON.stringify({ city: cityName })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (response.status === 401) { setAiPin(''); throw new Error("PIN sbagliato, riprova e te lo richiedo"); }
+        if (!response.ok) throw new Error(result.error || `errore ${response.status}`);
+        const newCity = result.city;
+        if (!newCity || !newCity.name) throw new Error("risposta vuota");
         newCity.id = (newCity.id || cityName.toLowerCase().replace(/[^a-z0-9]/g, '')) + '-' + Date.now().toString().slice(-4);
         if (!newCity.badgeColor) newCity.badgeColor = "bg-teal-900/60 text-teal-300 border-teal-700";
 
@@ -2063,7 +2021,7 @@ L'utente ti fornirà il nome di una località o isola thailandese. Restituisci E
 
     // ===================== AGGIORNA =====================
     // Dalla schermata Home non c'e' il tasto ricarica di Safari: questo scarica l'ultima versione
-    const APP_VERSION = "2026.11.09";
+    const APP_VERSION = "2026.11.09b";
     function updateApp() {
       document.querySelectorAll('.update-icon').forEach(i => i.classList.add('animate-spin'));
       saveDestinations();
