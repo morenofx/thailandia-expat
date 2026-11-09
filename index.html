@@ -125,6 +125,15 @@
     .view-btn.is-active .view-dot { opacity: 1; }
     .view-dot { width: 4px; height: 4px; border-radius: 9999px; background: #22d3ee; opacity: 0; margin-top: 2px; }
     .side-nav-btn.is-active { background: rgba(8, 145, 178, 0.25); color: #67e8f9; border-color: rgba(34, 211, 238, 0.5); }
+    /* finestre (scheda citta', backup, + Citta'): mai sotto la tacca o la barra Home */
+    .modal-overlay {
+      padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
+    }
+    .modal-box { max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px) !important; }
+    .modal-close-bar { position: sticky; top: 0; z-index: 1100; display: flex; justify-content: flex-end; height: 0; }
+    .modal-close-bar button { transform: translate(8px, -8px); }
+    .leaflet-container { isolation: isolate; }
     .leaflet-container { background: #aad3df; font-family: inherit; }
     .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #151f32; color: #e2e8f0; border: 1px solid #24344d; }
     .leaflet-popup-content { margin: 10px 12px; font-size: 13px; }
@@ -588,8 +597,8 @@
   </nav>
 
   <!-- MODALE AGGIUNGI NUOVA LOCALITÀ (VIA GEMINI API) -->
-  <div id="add-city-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-cardbg border border-bordercol rounded-2xl max-w-lg w-full p-5 sm:p-6 relative shadow-2xl">
+  <div id="add-city-modal" class="modal-overlay fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="modal-box bg-cardbg border border-bordercol rounded-2xl max-w-lg w-full overflow-y-auto p-5 sm:p-6 relative shadow-2xl">
       <button onclick="closeNewCityModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full leading-none">
         ✕
       </button>
@@ -637,11 +646,11 @@
   </div>
 
   <!-- Interactive Modal for Detailed View -->
-  <div id="city-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-cardbg border border-bordercol rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl">
-      <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full leading-none">
-        ✕
-      </button>
+  <div id="city-modal" class="modal-overlay fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="modal-box bg-cardbg border border-bordercol rounded-2xl max-w-2xl w-full overflow-y-auto overscroll-contain p-5 sm:p-6 relative shadow-2xl">
+      <div class="modal-close-bar">
+        <button onclick="closeModal()" aria-label="Chiudi" class="w-11 h-11 flex items-center justify-center rounded-full bg-slate-800/95 border border-slate-600 text-white text-lg shadow-lg active:scale-90 transition">✕</button>
+      </div>
       <div id="modal-content">
         <!-- Injected via JS -->
       </div>
@@ -649,8 +658,8 @@
   </div>
 
   <!-- MODALE BACKUP / TRASFERISCI SU NUOVO TELEFONO -->
-  <div id="backup-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-cardbg border border-bordercol rounded-2xl max-w-md w-full p-5 sm:p-6 relative shadow-2xl space-y-4">
+  <div id="backup-modal" class="modal-overlay fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="modal-box bg-cardbg border border-bordercol rounded-2xl max-w-md w-full overflow-y-auto p-5 sm:p-6 relative shadow-2xl space-y-4">
       <button onclick="closeBackupModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full leading-none">
         ✕
       </button>
@@ -1658,7 +1667,7 @@
             <div class="flex items-center justify-between gap-3">
               <div>
                 <span class="badge-pill ${item.badgeColor} mb-2">${item.badge}</span>
-                <h3 class="text-2xl font-black text-white">${item.name}</h3>
+                <h3 class="text-2xl font-black text-white pr-10">${item.name}</h3>
                 <p class="text-xs text-slate-400">${item.zone} • ${item.type}</p>
               </div>
               <div class="text-right">
@@ -2021,7 +2030,23 @@
 
     // ===================== AGGIORNA =====================
     // Dalla schermata Home non c'e' il tasto ricarica di Safari: questo scarica l'ultima versione
-    const APP_VERSION = "2026.11.09b";
+    const APP_VERSION = "2026.11.09c";
+    // All'apertura (e quando torni sull'app) controlla se online c'e' una versione nuova
+    async function checkForUpdate() {
+      try {
+        const r = await fetch(location.pathname + '?check=' + Date.now(), { cache: 'no-store' });
+        if (!r.ok) return;
+        const m = (await r.text()).match(/const APP_VERSION = "([^"]+)"/);
+        if (!m || m[1] === APP_VERSION) return;
+        // al massimo un ricaricamento automatico al minuto: niente giri a vuoto
+        let last = 0; try { last = +sessionStorage.getItem('thai_auto_update') || 0; } catch (e) {}
+        if (Date.now() - last < 60000) return;
+        try { sessionStorage.setItem('thai_auto_update', String(Date.now())); } catch (e) {}
+        updateApp();
+      } catch (e) {}
+    }
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkForUpdate(); });
+
     function updateApp() {
       document.querySelectorAll('.update-icon').forEach(i => i.classList.add('animate-spin'));
       saveDestinations();
@@ -2322,6 +2347,7 @@
     // App Initialization
     function initApp() {
       const v = document.getElementById('app-version'); if (v) v.textContent = APP_VERSION;
+      setTimeout(checkForUpdate, 1500);
       let startView = 'classifica';
       try { startView = localStorage.getItem(VIEW_KEY) || 'classifica'; } catch (e) {}
       showView(startView);
